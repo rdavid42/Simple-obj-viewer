@@ -2,6 +2,7 @@
 # define CORE_H
 
 # include <stddef.h>
+# include <openGL/gl.h>
 # include <mlx.h>
 # include "mlx_opengl.h"
 

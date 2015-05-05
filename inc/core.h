@@ -2,7 +2,8 @@
 # define CORE_H
 
 # include <stddef.h>
-# include <openGL/gl.h>
+# include <openGL/gl3.h>
+# include <openGL/gl3ext.h>
 # include <mlx.h>
 # include "mlx_opengl.h"
 
@@ -48,6 +49,11 @@ typedef struct		s_window
 typedef struct		s_core
 {
 	void			*mlx_init;
+	GLuint			shader;
+	GLuint			program;
+	GLuint			vao_id;
+	GLuint			vertex_buffer;
+	GLfloat			vertex_data[9];
 	t_window		window;
 }					t_core;
 

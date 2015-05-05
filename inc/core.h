@@ -63,7 +63,10 @@ void				put_pixel(t_image *img, int const *x, int const *y,
 								int const *cl);
 int					slen(char const *s);
 GLuint				load_shader(GLenum type, char const *filename);
+int					compile_shader(GLuint shader, char const *filename);
 int					init_shaders(t_core *c);
-GLuint				create_program(void);
+char				*read_file(char const *filename);
+int					print_error(char const *msg, int const code);
+void				*print_error_p(char const *msg);
 
 #endif

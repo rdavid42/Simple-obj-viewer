@@ -10,26 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <string.h>
-#include <fcntl.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include "core.h"
-
-int			print_error(char const *msg, int const code)
-{
-	return (code + 0 * write(2, msg, slen(msg)));
-}
-
-void		*print_error_p(char const *msg)
-{
-	int		ret;
-
-	ret = write(2, msg, slen(msg));
-	(void)ret;
-	return (NULL);
-}
 
 void		get_image_data(t_image *img)
 {
@@ -44,132 +28,6 @@ int			expose_hook(t_window *window)
 								// window->img.data, 0, 0);
 	}
 	return (1);
-}
-
-int			file_size(char const *filename)
-{
-	int		fd;
-	int		ret;
-	int		count;
-	char	buf[4096];
-
-	if ((fd = open(filename, O_RDONLY, 0644)) == -1)
-		return (print_error("Could not open file !\n", -1));
-	count = 0;
-	while ((ret = read(fd, buf, 4096)) != 0)
-	{
-		if (ret == -1)
-		{
-			close(fd);
-			return (print_error("Could not read file !\n", -1));
-		}
-		count += ret;
-	}
-	close(fd);
-	return (count);
-}
-
-char		*read_file(char const *filename)
-{
-	int				size;
-	int				fd;
-	int				i[2];
-	char			buf;
-	char			*file;
-
-	if ((size = file_size(filename)) == -1)
-		return (print_error_p("Could not get file size !\n"));
-	if (!(file = (char *)malloc(sizeof(char) * size + 1)))
-		return (print_error_p("Could not allocate memory !\n"));
-	if ((fd = open(filename, O_RDONLY, 0644)) == -1)
-		return (print_error_p("Could not open file !\n"));
-	i[1] = 0;
-	while ((i[0] = read(fd, &buf, 1)) != 0)
-	{
-		if (i[0] == -1)
-		{
-			close(fd);
-			return (print_error_p("Could not read file !\n"));
-		}
-		file[i[1]] = buf;
-		i[1]++;
-	}
-	file[i[1]] = '\0';
-	return (file);
-}
-
-GLuint		load_shader(GLenum type, char const *filename)
-{
-	GLuint			shader;
-	GLint			state;
-	GLint			logsize;
-	char			*compilelog;
-	char			*source;
-
-	shader = glCreateShader(type);
-	if (shader == 0)
-		return (print_error("Could not create shader !", 0));
-	if (!(source = read_file(filename)))
-		return (print_error("Could not read file !\n", 0));
-	glShaderSource(shader, 1, (char const **)&source, 0);
-	glCompileShader(shader);
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &state);
-	if (state != GL_TRUE)
-	{
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logsize);
-		if (!(compilelog = (char *)malloc(sizeof(char) * logsize + 1)))
-			return (0);
-		memset(compilelog, '\0', logsize + 1);
-		glGetShaderInfoLog(shader, logsize, &logsize, compilelog);
-		print_error("Could not compile shader `", 0);
-		print_error(filename, 0);
-		print_error("`: \n", 0);
-		print_error(compilelog, 0);
-		free(compilelog);
-		return (0);
-	}
-	return (shader);
-}
-
-int			init_shaders(t_core *c)
-{
-	GLint			state;
-	GLint			logsize;
-	char			*link_log;
-
-	if (!(c->vertex_shader = load_shader(GL_VERTEX_SHADER, "./shaders/test.vert")))
-		return (print_error("Could not load vertex shader !\n", 0));
-	if (!(c->fragment_shader = load_shader(GL_FRAGMENT_SHADER, "./shaders/test.frag")))
-		return (print_error("Could not load fragment shader !\n", 0));
-	if (!(c->program = create_program()))
-		return (print_error("Could not create program !\n", 0));
-	glAttachShader(c->program, c->vertex_shader);
-	glAttachShader(c->program, c->fragment_shader);
-	glLinkProgram(c->program);
-	glGetProgramiv(c->program, GL_LINK_STATUS, &state);
-	if (state != GL_TRUE)
-	{
-		glGetProgramiv(c->program, GL_INFO_LOG_LENGTH, &logsize);
-		if (!(link_log = (char *)malloc(sizeof(char) * logsize + 1)))
-			return (print_error("Could not allocate memory !\n", 0));
-		memset(link_log, '\0', logsize + 1);
-		glGetProgramInfoLog(c->program, logsize, &logsize, link_log);
-		print_error("Could not link program !\n", 0);
-		print_error(link_log, 0);
-		return (0);
-	}
-	glDeleteShader(c->vertex_shader);
-	glDeleteShader(c->fragment_shader);
-	return (1);
-}
-
-GLuint		create_program(void)
-{
-	GLuint		program;
-
-	if (!(program = glCreateProgram()))
-		return (print_error("Failed to create program !", 0));
-	return (program);
 }
 
 void		update_image(t_window *window)
@@ -219,7 +77,6 @@ int			mouse_event(int x, int y, t_window *window)
 
 int			loop_hook(t_core *c)
 {
-	(void)c;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glUseProgram(c->program);
 	glEnableVertexAttribArray(0);

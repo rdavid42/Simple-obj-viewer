@@ -49,7 +49,8 @@ typedef struct		s_window
 typedef struct		s_core
 {
 	void			*mlx_init;
-	GLuint			shader;
+	GLuint			vertex_shader;
+	GLuint			fragment_shader;
 	GLuint			program;
 	GLuint			vao_id;
 	GLuint			vertex_buffer;
@@ -61,5 +62,8 @@ int					scmp(const char *s1, const char *s2, size_t n);
 void				put_pixel(t_image *img, int const *x, int const *y,
 								int const *cl);
 int					slen(char const *s);
+GLuint				load_shader(GLenum type, char const *filename);
+int					init_shaders(t_core *c);
+GLuint				create_program(void);
 
 #endif

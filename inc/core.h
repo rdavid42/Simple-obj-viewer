@@ -24,6 +24,13 @@
 # define M_S_UP					4
 # define M_S_DOWN				5
 
+typedef struct		s_object
+{
+	char			*obj_name;
+	int				quads;
+	int				triangles;
+}					t_object;
+
 typedef struct		s_image
 {
 	char			*p_data;
@@ -62,6 +69,7 @@ int					scmp(const char *s1, const char *s2, size_t n);
 void				put_pixel(t_image *img, int const *x, int const *y,
 								int const *cl);
 int					slen(char const *s);
+int					sncmp(char const *s1, char const *s2, size_t n);
 GLuint				load_shader(GLenum type, char const *filename);
 int					compile_shader(GLuint shader, char const *filename);
 int					init_shaders(t_core *c);

@@ -7,6 +7,8 @@
 # include <mlx.h>
 # include "mlx_opengl.h"
 
+# define BUFSIZE				16384
+
 # define WW						1920
 # define WH						1080
 
@@ -26,9 +28,12 @@
 
 typedef struct		s_object
 {
-	char			*obj_name;
-	int				quads;
-	int				triangles;
+	int				vertices_size;
+	int				quad_indices_size;
+	int				trig_indices_size;
+	float			*vertices;
+	int				*quad_indices;
+	int				*trig_indices;
 }					t_object;
 
 typedef struct		s_image
@@ -56,6 +61,7 @@ typedef struct		s_window
 typedef struct		s_core
 {
 	void			*mlx_init;
+	t_object		otest;
 	GLuint			vertex_shader;
 	GLuint			fragment_shader;
 	GLuint			program;
@@ -76,5 +82,6 @@ int					init_shaders(t_core *c);
 char				*read_file(char const *filename);
 int					print_error(char const *msg, int const code);
 void				*print_error_p(char const *msg);
+int					parse_object(char const *filename, t_object *o);
 
 #endif

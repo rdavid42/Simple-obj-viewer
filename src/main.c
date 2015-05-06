@@ -150,6 +150,8 @@ int			main(int argc, char **argv)
 
 	if (!initialize_core(&core))
 		return (0);
+	if (!parse_object("resources/42.obj", &core.otest))
+		return (print_error("Failed to parse object !\n", 0));
 	mlx_loop(core.mlx_init);
 	(void)argc;
 	(void)argv;

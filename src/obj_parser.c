@@ -3,79 +3,170 @@
 #include <stdlib.h>
 #include "core.h"
 
-int					count_obj_data(char const *filename, t_mesh *m)
+void				init_object(t_object *o)
 {
-	char			n[256];
-	FILE			*f;
-	int				r;
-
-	if (!(f = fopen(filename, "r")))
-		return (0);
-	while ((r = fscanf(f, "%s", n)) != EOF)
-	{
-		if (!sncmp(n, "v ", 2))
-			m->vs++;
-		else if (!sncmp(n, "f ", 2))
-			m->fs++;
-	}
-	if (fclose(f) == EOF)
-		return (print_error("Failed to close file !\n", 0));
+	o->vertices_size = 0;
+	o->quad_indices_size = 0;
+	o->trig_indices_size = 0;
+	o->vertices = NULL;
+	o->quad_indices = NULL;
+	o->trig_indices = NULL;
 }
 
-void				init_mesh(t_mesh *m)
+int					alloc_object(t_object *o)
 {
-	m->vs = 0;
-	m->vts = 0;
-	m->fs = 0;
-	m->v = NULL;
-	m->vt = NULL;
-	m->f = NULL;
-}
-
-int					alloc_mesh(t_mesh *m)
-{
-	if (m->vs > 0)
-		if (!(m->v = (float *)malloc(sizeof(float) * m->vs)))
-			return (print_error("Failed to allocate memory !\n", 0));
-	if (m->vts > 0)
-		if (!(m->vt = (float *)malloc(sizeof(float) * m->vts)))
-			return (print_error("Failed to allocate memory !\n", 0));
-	if (m->fs > 0)
-		if (!(m->f = (float *)malloc(sizeof(float) * m->fs)))
-			return (print_error("Failed to allocate memory !\n", 0));
+	if (o->vertices_size > 0)
+		if (!(o->vertices =
+			(float *)malloc(sizeof(float) * o->vertices_size)))
+			return (print_error("Failed to allocate vertices !\n", 0));
+	if (o->quad_indices_size > 0)
+		if (!(o->quad_indices =
+			(int *)malloc(sizeof(int) * o->quad_indices_size)))
+			return (print_error("Failed to allocate indices !\n", 0));
+	if (o->trig_indices_size > 0)
+		if (!(o->trig_indices =
+			(int *)malloc(sizeof(int) * o->trig_indices_size)))
+			return (print_error("Failed to allocate indices !\n", 0));
 	return (1);
 }
 
-int					parse_obj(char const *filename, t_mesh *m)
+void				release_object(t_object *o)
 {
-	char			n[256];
-	FILE			*f;
-	int				r;
+	if (o->vertices != NULL)
+		free(o->vertices);
+	if (o->quad_indices != NULL)
+		free(o->quad_indices);
+	if (o->trig_indices != NULL)
+		free(o->trig_indices);
+}
 
-	init_mesh(m);
-	if (!count_obj_data(filename, m))
-		return (0);
-	dprintf(2, "vs: %d, vts: %d, fs: %d\n", m->vs, m->vts, m->fs);
-	if (!alloc_mesh(m))
-		return (0);
-/*	if (!(f = fopen(filename, "r")))
-		return (0);
-	while ((r = fscanf(f, "%s", n)) != EOF)
+int					get_buffer_next_line_size(char *file, int *offset)
+{
+	int				size;
+
+	size = 0;
+	while (file[*offset + size] != '\n')
 	{
-		if (!sncmp(n, "v", 1))
-		{
-
-		}
-		else if (!sncmp(n, "vt", 2))
-		{
-
-		}
-		else if (!sncmp(n, "f", 1))
-		{
-
-		}
+		if (!file[*offset + size])
+			return (size);
+		size++;
 	}
-	if (fclose(f) == EOF)
-		return (print_error("Failed to close file !\n", 0));*/
+	return (size + 1);
+}
+
+char				*get_buffer_next_line(char *file, int *offset)
+{
+	int const		size = get_buffer_next_line_size(file, offset);
+	char			*line;
+	int				i;
+
+	if (size == 0)
+		return (NULL);
+	if (!(line = (char *)malloc(sizeof(char) * size + 1)))
+		return (print_error_p("Failed to allocate memory !\n"));
+	i = 0;
+	while (file[*offset + i] != '\n' && file[*offset + i] != '\0')
+	{
+		line[i] = file[*offset + i];
+		i++;
+	}
+	line[i] = '\0';
+	*offset += size;
+	return (line);
+}
+
+void				count_object_data(char *file, t_object *o)
+{
+	int				index;
+	char			*line;
+	int				r;
+	int				t;
+
+	index = 0;
+	line = NULL;
+	while ((line = get_buffer_next_line(file, &index)))
+	{
+		if (!sncmp(line, "v ", 2))
+			o->vertices_size++;
+		else if (!sncmp(line, "f ", 2))
+		{
+			r = sscanf(line + 1, " %d %d %d %d", &t, &t, &t, &t);
+			if (r == 4)
+				o->quad_indices_size++;
+			if (r == 3)
+				o->trig_indices_size++;
+		}
+		free(line);
+		line = NULL;
+	}
+}
+
+int					parse_object_data(char *file, t_object *o)
+{
+	int				index;
+	char			*line;
+	int				r;
+	int				i[4];
+	int				j[3];
+
+	index = 0;
+	line = NULL;
+	j[0] = 0;
+	j[1] = 0;
+	j[2] = 0;
+	while ((line = get_buffer_next_line(file, &index)))
+	{
+		if (!sncmp(line, "v ", 2))
+		{
+			r = sscanf(line + 1, " %f %f %f", &o->vertices[j[0]],
+					&o->vertices[j[0] + 1], &o->vertices[j[0] + 2]);
+			dprintf(2, "v %f, %f, %f\n", o->vertices[j[0]], o->vertices[j[0] + 1], o->vertices[j[0] + 2]);
+			if (r != 3)
+			{
+				free(line);
+				return (0);
+			}
+			j[0] += 3;
+		}
+		else if (!sncmp(line, "f ", 2))
+		{
+			r = sscanf(line + 1, " %d %d %d %d", &i[0], &i[1], &i[2], &i[3]);
+			if (r == 4)
+			{
+				o->quad_indices[j[1] + 0] = i[0];
+				o->quad_indices[j[1] + 1] = i[1];
+				o->quad_indices[j[1] + 2] = i[2];
+				o->quad_indices[j[1] + 3] = i[3];
+				dprintf(2, "f %d %d %d %d\n", o->quad_indices[j[1] + 0], o->quad_indices[j[1] + 1], o->quad_indices[j[1] + 2], o->quad_indices[j[1] + 3]);
+				j[1] += 4;
+			}
+			else if (r == 3)
+			{
+				o->trig_indices[j[2] + 0] = i[0];
+				o->trig_indices[j[2] + 1] = i[1];
+				o->trig_indices[j[2] + 2] = i[2];
+				dprintf(2, "f %d %d %d\n", o->quad_indices[j[1] + 0], o->quad_indices[j[1] + 1], o->quad_indices[j[1] + 2]);
+				j[2] += 3;
+			}
+		}
+		free(line);
+		line = NULL;
+	}
+	return (1);
+}
+
+int					parse_object(char const *filename, t_object *o)
+{
+	char			*file;
+
+	init_object(o);
+	if (!(file = read_file(filename)))
+		return (0);
+	count_object_data(file, o);
+	dprintf(2, "vertices: %d, quads: %d, trigs: %d\n", o->vertices_size, o->quad_indices_size, o->trig_indices_size);
+	if (!alloc_object(o))
+		return (0);
+	parse_object_data(file, o);
+	free(file);
 	return (1);
 }

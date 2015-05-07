@@ -26,6 +26,13 @@
 # define M_S_UP					4
 # define M_S_DOWN				5
 
+typedef struct		s_vec
+{
+	float			x;
+	float			y;
+	float			z;
+}					t_vec;
+
 typedef struct		s_object
 {
 	int				vertices_size;
@@ -61,6 +68,10 @@ typedef struct		s_window
 
 typedef struct		s_core
 {
+	GLuint			proj_loc;
+	GLuint			view_loc;
+	float			proj_matrix[16];
+	float			view_matrix[16];
 	void			*mlx_init;
 	t_object		otest;
 	GLuint			vertex_shader;

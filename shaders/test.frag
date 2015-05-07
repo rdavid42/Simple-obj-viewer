@@ -1,8 +1,9 @@
 #version 410
 
-layout(location = 0) out vec3 color;
+in vec3 out_color;
+out vec4 out_fragment;
 
 void main()
 {
-	color = vec3(1.0f, 1.0f, 1.0f);
+	out_fragment = vec4(out_color, 1.0);
 }

@@ -55,9 +55,7 @@ char				*get_buffer_next_line(char *file, int *file_size, int *offset)
 	if (offset >= file_size)
 		return (NULL);
 	if (!(size = get_buffer_next_line_size(file, offset)))
-	{
 		return (NULL);
-	}
 	if (!(line = (char *)malloc(sizeof(char) * size + 1)))
 		return (print_error_p("Failed to allocate memory !\n"));
 	i = 0;

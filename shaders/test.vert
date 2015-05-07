@@ -1,9 +1,19 @@
 #version 410
 
-layout(location = 0) in vec3 position;
+// varying -> out
+// attribute -> in
+
+// uniform => global for all vertices in a draw call
+
+uniform mat4 view_matrix, proj_matrix;
+
+in vec4 position;
+in vec3 in_color;
+
+out vec3 out_color;
 
 void main()
 {
-	gl_Position.xyz = position;
-	gl_Position.w = 1.0f;
+	gl_Position = proj_matrix * view_matrix * position;
+	out_color = in_color;
 }

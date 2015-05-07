@@ -15,6 +15,133 @@
 #include <stdio.h>
 #include "core.h"
 
+void		cross_product(t_vec *a, t_vec *b, t_vec *r)
+{
+	r->x = a->y * b->z - b->y * a->z;
+	r->y = a->z * b->x - b->z * a->x;
+	r->z = a->x * b->y - b->x * a->y;
+}
+
+void		normalize(t_vec *a)
+{
+	float const		magnitude = sqrt(a->x * a->x + a->y * a->y + a->z * a->z);
+
+	a->x /= magnitude;
+	a->y /= magnitude;
+	a->z /= magnitude;
+}
+
+void		set_identity_matrix(float *mat, int size)
+{
+	int				i;
+	int const		s2 = size * size;
+
+	i = 0;
+	while (i < s2)
+	{
+		mat[i] = 0.0f;
+		i++;
+	}
+	i = 0;
+	while (i < size)
+	{
+		mat[i + i * size] = 1.0f;
+		i++;
+	}
+}
+
+void		multiply_matrix(float *a, float *b)
+{
+	float	res[16];
+	int		i;
+	int		j;
+	int		k;
+
+	i = 0;
+	while (i < 4)
+	{
+		j = 0;
+		while (j < 4)
+		{
+			res[j * 4 + i] = 0.0f;
+			k = 0;
+			while (k < 4)
+			{
+				res[j * 4 + i] += a[k * 4 + i] * b[j * 4 + k];
+				++k;
+			}
+			++j;
+		}
+		++i;
+	}
+	memcpy(a, res, 16 * sizeof(float));
+}
+
+void		set_translation_matrix(float *mat, float x, float y, float z)
+{
+	set_identity_matrix(mat, 4);
+	mat[12] = x;
+	mat[13] = y;
+	mat[14] = z;
+}
+
+void		build_projection_matrix(float *proj_matrix, float fov, float ratio, float near_p, float far_p)
+{
+    float const		f = 1.0f / tan (fov * (M_PI / 360.0));
+
+    setIdentityMatrix(proj_matrix, 4);
+    proj_matrix[0] = f / ratio;
+    proj_matrix[1 * 4 + 1] = f;
+    proj_matrix[2 * 4 + 2] = (far_p + near_p) / (near_p - far_p);
+    proj_matrix[3 * 4 + 2] = (2.0f * far_p * near_p) / (near_p - far_p);
+    proj_matrix[2 * 4 + 3] = -1.0f;
+    proj_matrix[3 * 4 + 3] = 0.0f;
+}
+
+t_vec		create_vec(float x, float y, float z)
+{
+	t_vec	v;
+
+	v.x = x;
+	v.y = y;
+	v.z = z;
+	return (v);
+}
+
+void		set_camera(float *view_matrix, t_vec pos, t_vec look_at)
+{
+	t_vec	dir;
+	t_vec	right;
+	t_vec	up;
+	float	aux[16];
+
+	up = create_vec(0.0f, 1.0f, 0.0f);
+	dir = create_vec(look_at.x - pos.x, look_at.y - pos.y, look_at.z - pos.z);
+	normalize(&dir);
+	cross_product(&dir, &up, &right);
+	normalize(&right);
+	cross_product(&right, &dir, &up);
+	normalize(&up);
+	view_matrix[0] = right.x;
+	view_matrix[4] = right.y;
+	view_matrix[8] = right.z;
+	view_matrix[12] = 0.0f;
+	view_matrix[1] = up.x;
+	view_matrix[5] = up.y;
+	view_matrix[9] = up.z;
+	view_matrix[13] = 0.0f;
+	view_matrix[2] = -dir.x;
+	view_matrix[6] = -dir.y;
+	view_matrix[10] = -dir.z;
+	view_matrix[14] = 0.0f;
+	view_matrix[3] = 0.0f;
+	view_matrix[7] = 0.0f;
+	view_matrix[11] = 0.0f;
+	view_matrix[15] = 1.0f;
+	set_translation_matrix(aux, -pos.x, -pos.y, -pos.z);
+	multiply_matrix(view_matrix, aux);
+}
+
 void		get_image_data(t_image *img)
 {
 	img->p_data = mlx_get_data_addr(img->data, &img->bpp, &img->sizeline, &img->endian);
@@ -144,20 +271,8 @@ int			initialize_core(t_core *core)
 	create_window(core);
 	if (!init_shaders(core))
 		return (0);
-/*	int			i;
 
-	i = 0;
-	while (i < core->otest.vertices_size * 3)
-	{
-		dprintf(2, "v: %f, %f, %f\n", core->otest.vertices[i], core->otest.vertices[i + 1], core->otest.vertices[i + 2]);
-		i += 3;
-	}
-	i = 0;
-	while (i < core->otest.indices_size * 3)
-	{
-		dprintf(2, "f: %d, %d, %d\n", core->otest.indices[i], core->otest.indices[i + 1], core->otest.indices[i + 2]);
-		i += 3;
-	}*/
+
 	glGenVertexArrays(1, &core->otest.vao_id);
 	glBindVertexArray(core->otest.vao_id);
 	// vertices
@@ -181,7 +296,7 @@ int			main(int argc, char **argv)
 {
 	t_core			core;
 
-	if (!parse_object("resources/42.obj", &core.otest))
+	if (!parse_object("resources/teapot2.obj", &core.otest))
 		return (print_error("Failed to parse object !\n", 0));
 	if (!initialize_core(&core))
 		return (0);

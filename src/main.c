@@ -75,17 +75,24 @@ int			mouse_event(int x, int y, t_window *window)
 	return (1);
 }
 
-int			loop_hook(t_core *c)
+void		check_gl_error(int code)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glUseProgram(c->program);
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, c->vertex_buffer);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	glDisableVertexAttribArray(0);
-	mlx_opengl_swap_buffers(c->window.init);
-	return (1);
+	GLenum		err;
+
+	err = glGetError();
+	if (err != GL_NO_ERROR)
+	{
+		if (err == GL_INVALID_ENUM)
+			dprintf(2, "(%d) Invalid enum !\n", code);
+		else if (err == GL_INVALID_VALUE)
+			dprintf(2, "(%d) Invalid value !\n", code);
+		else if (err == GL_INVALID_OPERATION)
+			dprintf(2, "(%d) Invalid operation !\n", code);
+		else if (err == GL_INVALID_FRAMEBUFFER_OPERATION)
+			dprintf(2, "(%d) Invalid framebuffer operation !\n", code);
+		else if (err == GL_OUT_OF_MEMORY)
+			dprintf(2, "(%d) Out of memory !\n", code);
+	}
 }
 
 int			create_image(t_window *w, t_image *img)
@@ -95,27 +102,14 @@ int			create_image(t_window *w, t_image *img)
 	return (1);
 }
 
-void		init_vertex_data(t_core *c)
-{
-	c->vertex_data[0] = -1.0f;
-	c->vertex_data[1] = -1.0f;
-	c->vertex_data[2] = 0.0f;
-	c->vertex_data[3] = 1.0f;
-	c->vertex_data[4] = -1.0f;
-	c->vertex_data[5] = 0.0f;
-	c->vertex_data[6] = 0.0f;
-	c->vertex_data[7] = 1.0f;
-	c->vertex_data[8] = 0.0f;
-}
-
 int			create_window(t_core *core)
 {
 	t_window				* const w = &core->window;
 
-
 	w->init = mlx_new_opengl_window(core->mlx_init, WW, WH, "Scop");
 	mlx_opengl_window_set_context(w->init);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glEnable(GL_DEPTH_TEST);
 	w->width = WW;
 	w->height = WH;
 	mlx_expose_hook(w->init, expose_hook, w);
@@ -128,19 +122,58 @@ int			create_window(t_core *core)
 	return (1);
 }
 
+int			loop_hook(t_core *c)
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glUseProgram(c->program);
+	check_gl_error(__LINE__);
+	glEnableVertexAttribArray(0);
+	check_gl_error(__LINE__);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+	check_gl_error(__LINE__);
+	glDrawElements(GL_TRIANGLES, c->otest.indices_size, GL_UNSIGNED_SHORT, 0);
+	check_gl_error(__LINE__);
+	mlx_opengl_swap_buffers(c->window.init);
+	return (1);
+}
+
 int			initialize_core(t_core *core)
 {
 	if (!(core->mlx_init = mlx_init()))
 		return (print_error("Could not initialize minilibx !\n", 0));
-	init_vertex_data(core);
 	create_window(core);
-	glGenVertexArrays(1, &core->vao_id);
-	glBindVertexArray(core->vao_id);
-	glGenBuffers(1, &core->vertex_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, core->vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(core->vertex_data), core->vertex_data, GL_STATIC_DRAW);
 	if (!init_shaders(core))
 		return (0);
+/*	int			i;
+
+	i = 0;
+	while (i < core->otest.vertices_size * 3)
+	{
+		dprintf(2, "v: %f, %f, %f\n", core->otest.vertices[i], core->otest.vertices[i + 1], core->otest.vertices[i + 2]);
+		i += 3;
+	}
+	i = 0;
+	while (i < core->otest.indices_size * 3)
+	{
+		dprintf(2, "f: %d, %d, %d\n", core->otest.indices[i], core->otest.indices[i + 1], core->otest.indices[i + 2]);
+		i += 3;
+	}*/
+	glGenVertexArrays(1, &core->otest.vao_id);
+	glBindVertexArray(core->otest.vao_id);
+	// vertices
+	glGenBuffers(1, &core->otest.vertex_vbo_id);
+	check_gl_error(__LINE__);
+	glBindBuffer(GL_ARRAY_BUFFER, core->otest.vertex_vbo_id);
+	check_gl_error(__LINE__);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * core->otest.vertices_size * 3, core->otest.vertices, GL_STATIC_DRAW);
+	check_gl_error(__LINE__);
+	// indices
+	glGenBuffers(1, &core->otest.indice_vbo_id);
+	check_gl_error(__LINE__);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, core->otest.indice_vbo_id);
+	check_gl_error(__LINE__);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * core->otest.indices_size * 3, core->otest.indices, GL_STATIC_DRAW);
+	check_gl_error(__LINE__);
 	return (1);
 }
 
@@ -148,10 +181,10 @@ int			main(int argc, char **argv)
 {
 	t_core			core;
 
-	if (!initialize_core(&core))
-		return (0);
 	if (!parse_object("resources/42.obj", &core.otest))
 		return (print_error("Failed to parse object !\n", 0));
+	if (!initialize_core(&core))
+		return (0);
 	mlx_loop(core.mlx_init);
 	(void)argc;
 	(void)argv;

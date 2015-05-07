@@ -29,11 +29,12 @@
 typedef struct		s_object
 {
 	int				vertices_size;
-	int				quad_indices_size;
-	int				trig_indices_size;
-	float			*vertices;
-	int				*quad_indices;
-	int				*trig_indices;
+	int				indices_size;
+	GLfloat			*vertices;
+	GLushort		*indices;
+	GLuint			vao_id;
+	GLuint			vertex_vbo_id;
+	GLuint			indice_vbo_id;
 }					t_object;
 
 typedef struct		s_image
@@ -65,9 +66,6 @@ typedef struct		s_core
 	GLuint			vertex_shader;
 	GLuint			fragment_shader;
 	GLuint			program;
-	GLuint			vao_id;
-	GLuint			vertex_buffer;
-	GLfloat			vertex_data[9];
 	t_window		window;
 }					t_core;
 
@@ -83,5 +81,6 @@ char				*read_file(char const *filename);
 int					print_error(char const *msg, int const code);
 void				*print_error_p(char const *msg);
 int					parse_object(char const *filename, t_object *o);
+int					loop_hook(t_core *c);
 
 #endif

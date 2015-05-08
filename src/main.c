@@ -164,17 +164,14 @@ void		update_image(t_window *window)
 							// window->img.data, 0, 0);
 }
 
-int			key_hook(unsigned int key, t_core *core)
+int			key_hook(unsigned int key, t_core *c)
 {
 	if (key == K_ESC)
 		exit(0);
 	else if (key == K_DOWN)
-	{
-	}
+		c->translate.y -= 0.1f;
 	else if (key == K_UP)
-	{
-	}
-	(void)core;
+		c->translate.y += 0.1f;
 	return (1);
 }
 
@@ -253,6 +250,9 @@ int			loop_hook(t_core *c)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	c->cam_pos = create_vec(5.0f + c->translate.x, c->translate.y, c->translate.z);
+	c->cam_look_at = create_vec(c->translate.x, c->translate.y, c->translate.z);
+
 	set_camera(c->view_matrix, c->cam_pos, c->cam_look_at);
 
 	glUseProgram(c->program);
@@ -284,9 +284,11 @@ int			initialize_core(t_core *core)
 	core->proj_loc = glGetUniformLocation(core->program, "proj_matrix");
 	core->view_loc = glGetUniformLocation(core->program, "view_matrix");
 
+	core->translate = create_vec(0.0f, 0.0f, 0.0f);
+
 	core->y_deg = 0;
-	core->cam_pos = create_vec(5, 0, 0);
-	core->cam_look_at = create_vec(0, 0, 0);
+	core->cam_pos = create_vec(5.0f, 0.0f, 0.0f);
+	core->cam_look_at = create_vec(0.0f, 0.0f, 0.0f);
 
 	glGenVertexArrays(1, &core->otest.vao_id);
 	glBindVertexArray(core->otest.vao_id);

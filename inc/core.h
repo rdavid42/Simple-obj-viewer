@@ -68,6 +68,7 @@ typedef struct		s_window
 
 typedef struct		s_core
 {
+	t_vec			translate;
 	GLuint			y_deg_loc;
 	float			y_deg;
 	t_vec			cam_pos;

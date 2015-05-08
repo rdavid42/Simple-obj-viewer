@@ -48,23 +48,23 @@ int					get_buffer_next_line_size(char *file, int *offset)
 	while (file[*offset + size] != '\n')
 	{
 		if (!file[*offset + size])
-			return (size);
+			return (-1);
 		size++;
 	}
 	return (size);
 }
 
-char				*get_buffer_next_line(char *file, int *file_size, int *offset)
+char				*get_buffer_next_line(char *file, int *file_size,
+										int *offset, int *line_size)
 {
-	int				size;
 	char			*line;
 	int				i;
 
 	if (offset >= file_size)
 		return (NULL);
-	if (!(size = get_buffer_next_line_size(file, offset)))
+	if ((*line_size = get_buffer_next_line_size(file, offset)) == -1)
 		return (NULL);
-	if (!(line = (char *)malloc(sizeof(char) * size + 1)))
+	if (!(line = (char *)malloc(sizeof(char) * *line_size + 1)))
 		return (print_error_p("Failed to allocate memory !\n"));
 	i = 0;
 	while (file[*offset + i] != '\n' && file[*offset + i] != '\0')
@@ -72,8 +72,8 @@ char				*get_buffer_next_line(char *file, int *file_size, int *offset)
 		line[i] = file[*offset + i];
 		i++;
 	}
-	line[size] = '\0';
-	*offset += size + 1;
+	line[*line_size] = '\0';
+	*offset += *line_size + 1;
 	return (line);
 }
 
@@ -81,6 +81,7 @@ int					parse_object_data(char *file, int *file_size, t_object *o)
 {
 	int				index;
 	char			*line;
+	int				size;
 	int				r;
 	int				i[4];
 	int				j[2];
@@ -90,42 +91,45 @@ int					parse_object_data(char *file, int *file_size, t_object *o)
 	line = NULL;
 	j[0] = 0;
 	j[1] = 0;
-	while ((line = get_buffer_next_line(file, file_size, &index)) != NULL)
+	while ((line = get_buffer_next_line(file, file_size, &index, &size)) != NULL)
 	{
-		if (!sncmp(line, "v ", 2))
+		if (size > 1)
 		{
-			r = sscanf(line, "v %f %f %f", &o->vertices[j[0]],
+			if (!sncmp(line, "v ", 2))
+			{
+				sscanf(line, "v %f %f %f", &o->vertices[j[0]],
 					&o->vertices[j[0] + 1], &o->vertices[j[0] + 2]);
-			j[0] += 3;
-		}
-		else if (!sncmp(line, "f ", 2))
-		{
-			r = sscanf(line, "f %d %d %d %d", &i[0], &i[1], &i[2], &i[3]);
-			if (r == 4)
-			{
-				o->indices[j[1] + 0] = i[0] - 1;
-				o->indices[j[1] + 1] = i[1] - 1;
-				o->indices[j[1] + 2] = i[2] - 1;
-				o->indices[j[1] + 3] = i[0] - 1;
-				o->indices[j[1] + 4] = i[2] - 1;
-				o->indices[j[1] + 5] = i[3] - 1;
-				o->colors[j[1] + 0] = 0.6f;
-				o->colors[j[1] + 1] = 0.6f;
-				o->colors[j[1] + 2] = 0.6f;
-				o->colors[j[1] + 3] = 0.4f;
-				o->colors[j[1] + 4] = 0.4f;
-				o->colors[j[1] + 5] = 0.4f;
-				j[1] += 6;
+				j[0] += 3;
 			}
-			else if (r == 3)
+			else if (!sncmp(line, "f ", 2))
 			{
-				o->indices[j[1] + 0] = i[0] - 1;
-				o->indices[j[1] + 1] = i[1] - 1;
-				o->indices[j[1] + 2] = i[2] - 1;
-				o->colors[j[1] + 0] = 0.2f;
-				o->colors[j[1] + 1] = 0.2f;
-				o->colors[j[1] + 2] = 0.2f;
-				j[1] += 3;
+				r = sscanf(line, "f %d %d %d %d", &i[0], &i[1], &i[2], &i[3]);
+				if (r == 4)
+				{
+					o->indices[j[1] + 0] = i[0] - 1;
+					o->indices[j[1] + 1] = i[1] - 1;
+					o->indices[j[1] + 2] = i[2] - 1;
+					o->indices[j[1] + 3] = i[0] - 1;
+					o->indices[j[1] + 4] = i[2] - 1;
+					o->indices[j[1] + 5] = i[3] - 1;
+					o->colors[j[1] + 0] = 0.6f;
+					o->colors[j[1] + 1] = 0.6f;
+					o->colors[j[1] + 2] = 0.6f;
+					o->colors[j[1] + 3] = 0.4f;
+					o->colors[j[1] + 4] = 0.4f;
+					o->colors[j[1] + 5] = 0.4f;
+					j[1] += 6;
+				}
+				else if (r == 3)
+				{
+					o->indices[j[1] + 0] = i[0] - 1;
+					o->indices[j[1] + 1] = i[1] - 1;
+					o->indices[j[1] + 2] = i[2] - 1;
+					o->colors[j[1] + 0] = 0.2f;
+					o->colors[j[1] + 1] = 0.2f;
+					o->colors[j[1] + 2] = 0.2f;
+					j[1] += 3;
+				}
 			}
 		}
 		free(line);
@@ -138,12 +142,13 @@ void				count_object_data(char *file, int *file_size, t_object *o)
 {
 	int				index;
 	char			*line;
+	int				size;
 	int				r;
 	int				t;
 
 	index = 0;
 	line = NULL;
-	while ((line = get_buffer_next_line(file, file_size, &index)))
+	while ((line = get_buffer_next_line(file, file_size, &index, &size)))
 	{
 		if (!sncmp(line, "v ", 2))
 			o->vertices_size++;

@@ -164,51 +164,23 @@ void		update_image(t_window *window)
 							// window->img.data, 0, 0);
 }
 
-void		init_keys(t_core *c)
-{
-	c->keys.down = 0;
-	c->keys.up = 0;
-	c->keys.left = 0;
-	c->keys.right = 0;
-	c->keys.plus = 0;
-	c->keys.min = 0;
-}
-
 int			key_hook(unsigned int key, t_core *c)
 {
 	if (key == K_ESC)
 		exit(0);
 	else if (key == K_DOWN)
-		c->keys.down = 1;
-	else if (key == K_UP)
-		c->keys.up = 1;
-	else if (key == K_LEFT)
-		c->keys.left = 1;
-	else if (key == K_RIGHT)
-		c->keys.right = 1;
-	else if (key == K_KPLUS)
-		c->keys.plus = 1;
-	else if (key == K_KMIN)
-		c->keys.min = 1;
-	else
-		init_keys(c);
-	return (1);
-}
-
-void		update_translation(t_core *c)
-{
-	if (c->keys.down)
 		c->translate.y += TRANSLATE_SPEED;
-	else if (c->keys.up)
+	else if (key == K_UP)
 		c->translate.y -= TRANSLATE_SPEED;
-	else if (c->keys.left)
+	else if (key == K_LEFT)
 		c->translate.z -= TRANSLATE_SPEED;
-	else if (c->keys.right)
+	else if (key == K_RIGHT)
 		c->translate.z += TRANSLATE_SPEED;
-	else if (c->keys.plus)
+	else if (key == K_KPLUS)
 		c->translate.x -= TRANSLATE_SPEED;
-	else if (c->keys.min)
+	else if (key == K_KMIN)
 		c->translate.x += TRANSLATE_SPEED;
+	return (1);
 }
 
 int			mouse_hook(int button, int x, int y, t_core *core)
@@ -272,8 +244,10 @@ int			create_window(t_core *core)
 	glEnable(GL_DEPTH_TEST);
 	w->width = WW;
 	w->height = WH;
+	mlx_do_key_autorepeaton(core->mlx_init);
 	mlx_expose_hook(w->init, expose_hook, core);
 	mlx_key_hook(w->init, key_hook, core);
+//	mlx_hook(w->init, 1, (1 << 0), key_hook, core);
 	mlx_hook(w->init, MOTION, MOTION_MASK, mouse_event, core);
 	mlx_mouse_hook(w->init, mouse_hook, core);
 	mlx_loop_hook(core->mlx_init, loop_hook, core);
@@ -285,8 +259,6 @@ int			create_window(t_core *core)
 int			loop_hook(t_core *c)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	update_translation(c);
 
 	c->cam_pos = create_vec(5.0f + c->translate.x, c->translate.y, c->translate.z);
 	c->cam_look_at = create_vec(c->translate.x, c->translate.y, c->translate.z);
@@ -314,7 +286,6 @@ int			initialize_core(t_core *c)
 	create_window(c);
 	if (!init_shaders(c))
 		return (0);
-	init_keys(c);
 
 	c->position_loc = glGetAttribLocation(c->program, "position");
 	c->color_loc = glGetAttribLocation(c->program, "in_color");

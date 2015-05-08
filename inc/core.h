@@ -68,16 +68,6 @@ typedef struct		s_window
 	int				my;
 }					t_window;
 
-typedef struct		s_keys
-{
-	int				down;
-	int				up;
-	int				left;
-	int				right;
-	int				plus;
-	int				min;
-}					t_keys;
-
 typedef struct		s_core
 {
 	t_vec			translate;
@@ -89,7 +79,6 @@ typedef struct		s_core
 	GLuint			color_loc;
 	GLuint			proj_loc;
 	GLuint			view_loc;
-	t_keys			keys;
 	float			proj_matrix[16];
 	float			view_matrix[16];
 	void			*mlx_init;

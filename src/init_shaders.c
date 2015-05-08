@@ -53,6 +53,7 @@ int					init_shaders(t_core *c)
 	if (!(c->program = glCreateProgram()))
 		return (print_error("Failed to create program !", 0));
 	attach_shaders(c);
+	glBindFragDataLocation(c->program, 0, "out_fragment");
 	if (!link_program(c))
 		return (0);
 	delete_shaders(c);

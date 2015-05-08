@@ -14,13 +14,17 @@ void				init_object(t_object *o)
 int					alloc_object(t_object *o)
 {
 	if (o->vertices_size > 0)
+	{
 		if (!(o->vertices =
-			(float *)malloc(sizeof(GLfloat) * o->vertices_size * 3)))
+			(GLfloat *)malloc(sizeof(GLfloat) * o->vertices_size * 3)))
 			return (print_error("Failed to allocate vertices !\n", 0));
+	}
 	if (o->indices_size > 0)
+	{
 		if (!(o->indices =
 			(GLushort *)malloc(sizeof(GLushort) * o->indices_size * 3)))
 			return (print_error("Failed to allocate indices !\n", 0));
+	}
 	return (1);
 }
 
@@ -95,19 +99,19 @@ int					parse_object_data(char *file, int *file_size, t_object *o)
 			r = sscanf(line, "f %d %d %d %d", &i[0], &i[1], &i[2], &i[3]);
 			if (r == 4)
 			{
-				o->indices[j[1] + 0] = i[0];
-				o->indices[j[1] + 1] = i[1];
-				o->indices[j[1] + 2] = i[2];
-				o->indices[j[1] + 3] = i[0];
-				o->indices[j[1] + 4] = i[2];
-				o->indices[j[1] + 5] = i[3];
+				o->indices[j[1] + 0] = i[0] - 1;
+				o->indices[j[1] + 1] = i[1] - 1;
+				o->indices[j[1] + 2] = i[2] - 1;
+				o->indices[j[1] + 3] = i[0] - 1;
+				o->indices[j[1] + 4] = i[2] - 1;
+				o->indices[j[1] + 5] = i[3] - 1;
 				j[1] += 6;
 			}
 			else if (r == 3)
 			{
-				o->indices[j[1] + 0] = i[0];
-				o->indices[j[1] + 1] = i[1];
-				o->indices[j[1] + 2] = i[2];
+				o->indices[j[1] + 0] = i[0] - 1;
+				o->indices[j[1] + 1] = i[1] - 1;
+				o->indices[j[1] + 2] = i[2] - 1;
 				j[1] += 3;
 			}
 		}
@@ -132,7 +136,7 @@ void				count_object_data(char *file, int *file_size, t_object *o)
 			o->vertices_size++;
 		else if (!sncmp(line, "f ", 2))
 		{
-			r = sscanf(line + 1, " %d %d %d %d", &t, &t, &t, &t);
+			r = sscanf(line, "f %d %d %d %d", &t, &t, &t, &t);
 			if (r == 4)
 				o->indices_size += 2;
 			if (r == 3)

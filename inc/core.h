@@ -40,8 +40,7 @@ typedef struct		s_object
 	GLfloat			*vertices;
 	GLushort		*indices;
 	GLuint			vao_id;
-	GLuint			vertex_vbo_id;
-	GLuint			indice_vbo_id;
+	GLuint			vbo_ids[2];
 }					t_object;
 
 typedef struct		s_image

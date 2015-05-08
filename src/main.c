@@ -164,15 +164,51 @@ void		update_image(t_window *window)
 							// window->img.data, 0, 0);
 }
 
+void		init_keys(t_core *c)
+{
+	c->keys.down = 0;
+	c->keys.up = 0;
+	c->keys.left = 0;
+	c->keys.right = 0;
+	c->keys.plus = 0;
+	c->keys.min = 0;
+}
+
 int			key_hook(unsigned int key, t_core *c)
 {
 	if (key == K_ESC)
 		exit(0);
 	else if (key == K_DOWN)
-		c->translate.y -= 0.1f;
+		c->keys.down = 1;
 	else if (key == K_UP)
-		c->translate.y += 0.1f;
+		c->keys.up = 1;
+	else if (key == K_LEFT)
+		c->keys.left = 1;
+	else if (key == K_RIGHT)
+		c->keys.right = 1;
+	else if (key == K_KPLUS)
+		c->keys.plus = 1;
+	else if (key == K_KMIN)
+		c->keys.min = 1;
+	else
+		init_keys(c);
 	return (1);
+}
+
+void		update_translation(t_core *c)
+{
+	if (c->keys.down)
+		c->translate.y += TRANSLATE_SPEED;
+	else if (c->keys.up)
+		c->translate.y -= TRANSLATE_SPEED;
+	else if (c->keys.left)
+		c->translate.z -= TRANSLATE_SPEED;
+	else if (c->keys.right)
+		c->translate.z += TRANSLATE_SPEED;
+	else if (c->keys.plus)
+		c->translate.x -= TRANSLATE_SPEED;
+	else if (c->keys.min)
+		c->translate.x += TRANSLATE_SPEED;
 }
 
 int			mouse_hook(int button, int x, int y, t_core *core)
@@ -250,6 +286,8 @@ int			loop_hook(t_core *c)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	update_translation(c);
+
 	c->cam_pos = create_vec(5.0f + c->translate.x, c->translate.y, c->translate.z);
 	c->cam_look_at = create_vec(c->translate.x, c->translate.y, c->translate.z);
 
@@ -269,47 +307,48 @@ int			loop_hook(t_core *c)
 	return (1);
 }
 
-int			initialize_core(t_core *core)
+int			initialize_core(t_core *c)
 {
-	if (!(core->mlx_init = mlx_init()))
+	if (!(c->mlx_init = mlx_init()))
 		return (print_error("Could not initialize minilibx !\n", 0));
-	create_window(core);
-	if (!init_shaders(core))
+	create_window(c);
+	if (!init_shaders(c))
 		return (0);
+	init_keys(c);
 
-	core->position_loc = glGetAttribLocation(core->program, "position");
-	core->color_loc = glGetAttribLocation(core->program, "in_color");
+	c->position_loc = glGetAttribLocation(c->program, "position");
+	c->color_loc = glGetAttribLocation(c->program, "in_color");
 
-	core->y_deg_loc = glGetUniformLocation(core->program, "y_deg");
-	core->proj_loc = glGetUniformLocation(core->program, "proj_matrix");
-	core->view_loc = glGetUniformLocation(core->program, "view_matrix");
+	c->y_deg_loc = glGetUniformLocation(c->program, "y_deg");
+	c->proj_loc = glGetUniformLocation(c->program, "proj_matrix");
+	c->view_loc = glGetUniformLocation(c->program, "view_matrix");
 
-	core->translate = create_vec(0.0f, 0.0f, 0.0f);
+	c->translate = create_vec(0.0f, 0.0f, 0.0f);
 
-	core->y_deg = 0;
-	core->cam_pos = create_vec(5.0f, 0.0f, 0.0f);
-	core->cam_look_at = create_vec(0.0f, 0.0f, 0.0f);
+	c->y_deg = 0;
+	c->cam_pos = create_vec(5.0f, 0.0f, 0.0f);
+	c->cam_look_at = create_vec(0.0f, 0.0f, 0.0f);
 
-	glGenVertexArrays(1, &core->otest.vao_id);
-	glBindVertexArray(core->otest.vao_id);
-	glGenBuffers(2, &core->otest.vbo_ids[0]);
+	glGenVertexArrays(1, &c->otest.vao_id);
+	glBindVertexArray(c->otest.vao_id);
+	glGenBuffers(2, &c->otest.vbo_ids[0]);
 	// vertices
-	glBindBuffer(GL_ARRAY_BUFFER, core->otest.vbo_ids[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * core->otest.vertices_size * 3, core->otest.vertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(core->position_loc);
-	glVertexAttribPointer(core->position_loc, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+	glBindBuffer(GL_ARRAY_BUFFER, c->otest.vbo_ids[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * c->otest.vertices_size * 3, c->otest.vertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(c->position_loc);
+	glVertexAttribPointer(c->position_loc, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 	// colors
-	glBindBuffer(GL_ARRAY_BUFFER, core->otest.vbo_ids[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * core->otest.indices_size * 3, core->otest.colors, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(core->color_loc);
-	glVertexAttribPointer(core->color_loc, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+	glBindBuffer(GL_ARRAY_BUFFER, c->otest.vbo_ids[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * c->otest.indices_size * 3, c->otest.colors, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(c->color_loc);
+	glVertexAttribPointer(c->color_loc, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 	// indices
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, core->otest.vbo_ids[1]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * core->otest.indices_size * 3, core->otest.indices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, c->otest.vbo_ids[1]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * c->otest.indices_size * 3, c->otest.indices, GL_STATIC_DRAW);
 
 	check_gl_error(__LINE__);
 
-	build_projection_matrix(core->proj_matrix, 53.13f, (1.0f * core->window.width) / core->window.height, 1.0f, 30.0f);
+	build_projection_matrix(c->proj_matrix, 53.13f, (1.0f * c->window.width) / c->window.height, 1.0f, 30.0f);
 	return (1);
 }
 

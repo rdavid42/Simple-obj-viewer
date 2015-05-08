@@ -10,6 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <string.h>
+#include <math.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -89,7 +91,7 @@ void		build_projection_matrix(float *proj_matrix, float fov, float ratio, float 
 {
     float const		f = 1.0f / tan (fov * (M_PI / 360.0));
 
-    setIdentityMatrix(proj_matrix, 4);
+    set_identity_matrix(proj_matrix, 4);
     proj_matrix[0] = f / ratio;
     proj_matrix[1 * 4 + 1] = f;
     proj_matrix[2 * 4 + 2] = (far_p + near_p) / (near_p - far_p);
@@ -235,7 +237,7 @@ int			create_window(t_core *core)
 
 	w->init = mlx_new_opengl_window(core->mlx_init, WW, WH, "Scop");
 	mlx_opengl_window_set_context(w->init);
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 	w->width = WW;
 	w->height = WH;
@@ -252,12 +254,14 @@ int			create_window(t_core *core)
 int			loop_hook(t_core *c)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	set_camera(c->view_matrix, create_vec(10, 2, 10), create_vec(0, 2, 2));
+
 	glUseProgram(c->program);
-	check_gl_error(__LINE__);
+	glUniformMatrix4fv(c->proj_loc, 1, GL_FALSE, c->proj_matrix);
+	glUniformMatrix4fv(c->view_loc, 1, GL_FALSE, c->view_matrix);
 	glEnableVertexAttribArray(0);
-	check_gl_error(__LINE__);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
-	check_gl_error(__LINE__);
 	glDrawElements(GL_TRIANGLES, c->otest.indices_size, GL_UNSIGNED_SHORT, 0);
 	check_gl_error(__LINE__);
 	mlx_opengl_swap_buffers(c->window.init);
@@ -271,7 +275,11 @@ int			initialize_core(t_core *core)
 	create_window(core);
 	if (!init_shaders(core))
 		return (0);
-
+	glBindFragDataLocation(core->program, 0, "out_fragment");
+	core->position_loc = glGetAttribLocation(core->program, "position");
+	core->color_loc = glGetAttribLocation(core->program, "in_color");
+	core->proj_loc = glGetUniformLocation(core->program, "proj_matrix");
+	core->view_loc = glGetUniformLocation(core->program, "view_matrix");
 
 	glGenVertexArrays(1, &core->otest.vao_id);
 	glBindVertexArray(core->otest.vao_id);
@@ -289,6 +297,9 @@ int			initialize_core(t_core *core)
 	check_gl_error(__LINE__);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * core->otest.indices_size * 3, core->otest.indices, GL_STATIC_DRAW);
 	check_gl_error(__LINE__);
+
+	build_projection_matrix(core->proj_matrix, 53.13f, (1.0f * core->window.width) / core->window.height, 1.0f, 30.0f);
+
 	return (1);
 }
 
@@ -296,7 +307,7 @@ int			main(int argc, char **argv)
 {
 	t_core			core;
 
-	if (!parse_object("resources/teapot2.obj", &core.otest))
+	if (!parse_object("resources/42.obj", &core.otest))
 		return (print_error("Failed to parse object !\n", 0));
 	if (!initialize_core(&core))
 		return (0);

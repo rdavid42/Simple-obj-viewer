@@ -68,6 +68,8 @@ typedef struct		s_window
 
 typedef struct		s_core
 {
+	GLuint			position_loc;
+	GLuint			color_loc;
 	GLuint			proj_loc;
 	GLuint			view_loc;
 	float			proj_matrix[16];

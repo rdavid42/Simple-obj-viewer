@@ -13,7 +13,7 @@ FLAGS				=	-Ofast -g -Wall -Wextra -Werror
 VARS				=	-D_DEBUG
 NAME				=	scop
 
-LIBS				=	-framework OpenGL -framework AppKit ./minilibx_macos/libmlx.a
+LIBS				=	-framework OpenGL -framework AppKit ./minilibx_macos/libmlx.a -lm
 
 all: $(NAME)
 

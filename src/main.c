@@ -149,13 +149,11 @@ void		get_image_data(t_image *img)
 	img->p_data = mlx_get_data_addr(img->data, &img->bpp, &img->sizeline, &img->endian);
 }
 
-int			expose_hook(t_window *window)
+int			expose_hook(t_core *core)
 {
-	if (window)
-	{
-		// mlx_put_image_to_window(window->mlx_init, window->init,
-								// window->img.data, 0, 0);
-	}
+	(void)core;
+	// mlx_put_image_to_window(window->mlx_init, window->init,
+							// window->img.data, 0, 0);
 	return (1);
 }
 
@@ -166,7 +164,7 @@ void		update_image(t_window *window)
 							// window->img.data, 0, 0);
 }
 
-int			key_hook(unsigned int key, t_window *window)
+int			key_hook(unsigned int key, t_core *core)
 {
 	if (key == K_ESC)
 		exit(0);
@@ -176,31 +174,31 @@ int			key_hook(unsigned int key, t_window *window)
 	else if (key == K_UP)
 	{
 	}
-	(void)window;
+	(void)core;
 	return (1);
 }
 
-int			mouse_hook(int button, int x, int y, t_window *window)
+int			mouse_hook(int button, int x, int y, t_core *core)
 {
 	(void)button;
 	(void)x;
 	(void)y;
-	(void)window;
+	(void)core;
 	return (1);
 }
 
-int			mouse_event(int x, int y, t_window *window)
+int			mouse_event(int x, int y, t_core *core)
 {
 	if (x < 0)
 		x = 0;
 	if (y < 0)
 		y = 0;
-	if (x > window->width)
-		x = window->width;
-	if (y > window->height)
-		y = window->height;
-	window->mx = x;
-	window->my = y;
+	if (x > core->window.width)
+		x = core->window.width;
+	if (y > core->window.height)
+		y = core->window.height;
+	core->window.mx = x;
+	core->window.my = y;
 	return (1);
 }
 
@@ -241,10 +239,10 @@ int			create_window(t_core *core)
 	glEnable(GL_DEPTH_TEST);
 	w->width = WW;
 	w->height = WH;
-	mlx_expose_hook(w->init, expose_hook, w);
-	mlx_key_hook(w->init, key_hook, w);
-	mlx_hook(w->init, MOTION, MOTION_MASK, mouse_event, w);
-	mlx_mouse_hook(w->init, mouse_hook, w);
+	mlx_expose_hook(w->init, expose_hook, core);
+	mlx_key_hook(w->init, key_hook, core);
+	mlx_hook(w->init, MOTION, MOTION_MASK, mouse_event, core);
+	mlx_mouse_hook(w->init, mouse_hook, core);
 	mlx_loop_hook(core->mlx_init, loop_hook, core);
 	w->mx = 0;
 	w->my = 0;
@@ -255,13 +253,18 @@ int			loop_hook(t_core *c)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	set_camera(c->view_matrix, create_vec(10, 5, 10), create_vec(2, 2, 2));
+	set_camera(c->view_matrix, c->cam_pos, c->cam_look_at);
 
 	glUseProgram(c->program);
 	glUniformMatrix4fv(c->proj_loc, 1, GL_FALSE, c->proj_matrix);
 	glUniformMatrix4fv(c->view_loc, 1, GL_FALSE, c->view_matrix);
+	glUniform1f(c->y_deg_loc, c->y_deg);
 	glDrawElements(GL_TRIANGLES, c->otest.indices_size * 3, GL_UNSIGNED_SHORT, 0);
 	check_gl_error(__LINE__);
+
+	c->y_deg++;
+	if (c->y_deg == 360)
+		c->y_deg = 0;
 	mlx_opengl_swap_buffers(c->window.init);
 	return (1);
 }
@@ -273,19 +276,17 @@ int			initialize_core(t_core *core)
 	create_window(core);
 	if (!init_shaders(core))
 		return (0);
+
 	core->position_loc = glGetAttribLocation(core->program, "position");
 	core->color_loc = glGetAttribLocation(core->program, "in_color");
+
+	core->y_deg_loc = glGetUniformLocation(core->program, "y_deg");
 	core->proj_loc = glGetUniformLocation(core->program, "proj_matrix");
 	core->view_loc = glGetUniformLocation(core->program, "view_matrix");
 
-/*
-	int i = 0;
-	while (i < core->otest.indices_size * 3)
-	{
-		dprintf(2, "f %d %d %d\n", core->otest.indices[i], core->otest.indices[i + 1], core->otest.indices[i + 2]);
-		i += 3;
-	}
-*/
+	core->y_deg = 0;
+	core->cam_pos = create_vec(5, 0, 0);
+	core->cam_look_at = create_vec(0, 0, 0);
 
 	glGenVertexArrays(1, &core->otest.vao_id);
 	glBindVertexArray(core->otest.vao_id);
@@ -293,12 +294,16 @@ int			initialize_core(t_core *core)
 	// vertices
 	glBindBuffer(GL_ARRAY_BUFFER, core->otest.vbo_ids[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * core->otest.vertices_size * 3, core->otest.vertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(core->position_loc);
+	glVertexAttribPointer(core->position_loc, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+	// colors
+	glBindBuffer(GL_ARRAY_BUFFER, core->otest.vbo_ids[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * core->otest.indices_size * 3, core->otest.colors, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(core->color_loc);
+	glVertexAttribPointer(core->color_loc, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 	// indices
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, core->otest.vbo_ids[1]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * core->otest.indices_size * 3, core->otest.indices, GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
 	check_gl_error(__LINE__);
 

@@ -39,6 +39,7 @@ typedef struct		s_object
 	int				indices_size;
 	GLfloat			*vertices;
 	GLushort		*indices;
+	GLfloat			*colors;
 	GLuint			vao_id;
 	GLuint			vbo_ids[2];
 }					t_object;
@@ -67,6 +68,10 @@ typedef struct		s_window
 
 typedef struct		s_core
 {
+	GLuint			y_deg_loc;
+	float			y_deg;
+	t_vec			cam_pos;
+	t_vec			cam_look_at;
 	GLuint			position_loc;
 	GLuint			color_loc;
 	GLuint			proj_loc;

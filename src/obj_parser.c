@@ -8,6 +8,7 @@ void				init_object(t_object *o)
 	o->vertices_size = 0;
 	o->indices_size = 0;
 	o->vertices = NULL;
+	o->colors = NULL;
 	o->indices = NULL;
 }
 
@@ -24,6 +25,9 @@ int					alloc_object(t_object *o)
 		if (!(o->indices =
 			(GLushort *)malloc(sizeof(GLushort) * o->indices_size * 3)))
 			return (print_error("Failed to allocate indices !\n", 0));
+		if (!(o->colors =
+			(GLfloat *)malloc(sizeof(GLfloat) * o->indices_size * 3)))
+			return (print_error("Failed to allocate colors !\n", 0));
 	}
 	return (1);
 }
@@ -105,6 +109,12 @@ int					parse_object_data(char *file, int *file_size, t_object *o)
 				o->indices[j[1] + 3] = i[0] - 1;
 				o->indices[j[1] + 4] = i[2] - 1;
 				o->indices[j[1] + 5] = i[3] - 1;
+				o->colors[j[1] + 0] = 0.6f;
+				o->colors[j[1] + 1] = 0.6f;
+				o->colors[j[1] + 2] = 0.6f;
+				o->colors[j[1] + 3] = 0.4f;
+				o->colors[j[1] + 4] = 0.4f;
+				o->colors[j[1] + 5] = 0.4f;
 				j[1] += 6;
 			}
 			else if (r == 3)
@@ -112,6 +122,9 @@ int					parse_object_data(char *file, int *file_size, t_object *o)
 				o->indices[j[1] + 0] = i[0] - 1;
 				o->indices[j[1] + 1] = i[1] - 1;
 				o->indices[j[1] + 2] = i[2] - 1;
+				o->colors[j[1] + 0] = 0.2f;
+				o->colors[j[1] + 1] = 0.2f;
+				o->colors[j[1] + 2] = 0.2f;
 				j[1] += 3;
 			}
 		}

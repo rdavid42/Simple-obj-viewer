@@ -45,8 +45,12 @@ layout(location = 1) in vec3 in_color;
 out vec3 out_color1;
 out float out_anim;
 
+in vec2 vert_tex_coord;
+out vec2 geom_tex_coord;
+
 void main()
 {
+	geom_tex_coord = vert_tex_coord;
 	gl_Position = proj_matrix * view_matrix
 				* rotation_matrix(vec3(0.0, 1.0, 0.0), deg_to_rad(y_deg))
 				* translation_matrix(vec3(0.0, 0.0, -1.0))

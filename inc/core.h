@@ -27,7 +27,7 @@
 # define M_S_UP					4
 # define M_S_DOWN				5
 
-# define TRANSLATE_SPEED		0.2f
+# define TRANSLATE_SPEED		0.1f
 
 typedef struct		s_vec
 {
@@ -43,8 +43,9 @@ typedef struct		s_object
 	GLfloat			*vertices;
 	GLushort		*indices;
 	GLfloat			*colors;
+	GLfloat			*texture_coord;
 	GLuint			vao_id;
-	GLuint			vbo_ids[3];
+	GLuint			vbo_ids[4];
 }					t_object;
 
 typedef struct		s_image
@@ -71,6 +72,9 @@ typedef struct		s_window
 
 typedef struct		s_core
 {
+	GLuint			texture;
+	GLuint			texture_loc;
+	GLuint			tex_coord_loc;
 	float			anim;
 	t_vec			translate;
 	GLuint			anim_loc;

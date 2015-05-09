@@ -9,6 +9,8 @@ static int			load_shaders(t_core *c)
 		return (print_error("Could not load vertex shader !\n", 0));
 	if (!(c->fragment_shader = load_shader(GL_FRAGMENT_SHADER, "./shaders/test.frag")))
 		return (print_error("Could not load fragment shader !\n", 0));
+	if (!(c->geometry_shader = load_shader(GL_GEOMETRY_SHADER, "./shaders/test.geom")))
+		return (print_error("Could not load geometry shader !\n", 0));
 	return (1);
 }
 
@@ -16,6 +18,7 @@ static void			attach_shaders(t_core *c)
 {
 	glAttachShader(c->program, c->vertex_shader);
 	glAttachShader(c->program, c->fragment_shader);
+	glAttachShader(c->program, c->geometry_shader);
 }
 
 static int			link_program(t_core *c)

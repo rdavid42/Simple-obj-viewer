@@ -168,6 +168,8 @@ int			key_hook(unsigned int key, t_core *c)
 {
 	if (key == K_ESC)
 		exit(0);
+	else if (key == K_A)
+		c->anim = !c->anim;
 	else if (key == K_DOWN)
 		c->translate.y += TRANSLATE_SPEED;
 	else if (key == K_UP)
@@ -269,6 +271,7 @@ int			loop_hook(t_core *c)
 	glUniformMatrix4fv(c->proj_loc, 1, GL_FALSE, c->proj_matrix);
 	glUniformMatrix4fv(c->view_loc, 1, GL_FALSE, c->view_matrix);
 	glUniform1f(c->y_deg_loc, c->y_deg);
+	glUniform1f(c->anim_loc, c->anim);
 	glDrawElements(GL_TRIANGLES, c->otest.indices_size * 3, GL_UNSIGNED_SHORT, 0);
 	check_gl_error(__LINE__);
 
@@ -287,10 +290,13 @@ int			initialize_core(t_core *c)
 	if (!init_shaders(c))
 		return (0);
 
+	c->anim = 0.0f;
+
 	c->position_loc = glGetAttribLocation(c->program, "position");
 	c->color_loc = glGetAttribLocation(c->program, "in_color");
 
 	c->y_deg_loc = glGetUniformLocation(c->program, "y_deg");
+	c->anim_loc = glGetUniformLocation(c->program, "anim");
 	c->proj_loc = glGetUniformLocation(c->program, "proj_matrix");
 	c->view_loc = glGetUniformLocation(c->program, "view_matrix");
 
@@ -302,7 +308,7 @@ int			initialize_core(t_core *c)
 
 	glGenVertexArrays(1, &c->otest.vao_id);
 	glBindVertexArray(c->otest.vao_id);
-	glGenBuffers(2, &c->otest.vbo_ids[0]);
+	glGenBuffers(3, &c->otest.vbo_ids[0]);
 	// vertices
 	glBindBuffer(GL_ARRAY_BUFFER, c->otest.vbo_ids[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * c->otest.vertices_size * 3, c->otest.vertices, GL_STATIC_DRAW);
@@ -314,7 +320,7 @@ int			initialize_core(t_core *c)
 	glEnableVertexAttribArray(c->color_loc);
 	glVertexAttribPointer(c->color_loc, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 	// indices
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, c->otest.vbo_ids[1]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, c->otest.vbo_ids[2]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * c->otest.indices_size * 3, c->otest.indices, GL_STATIC_DRAW);
 
 	check_gl_error(__LINE__);

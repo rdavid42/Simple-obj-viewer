@@ -19,6 +19,7 @@
 # define K_RIGHT				124
 # define K_UP					126
 # define K_DOWN					125
+# define K_A					0
 # define K_KPLUS				69
 # define K_KMIN					78
 # define M_LEFT					1
@@ -26,7 +27,7 @@
 # define M_S_UP					4
 # define M_S_DOWN				5
 
-# define TRANSLATE_SPEED		0.05f
+# define TRANSLATE_SPEED		0.2f
 
 typedef struct		s_vec
 {
@@ -43,7 +44,7 @@ typedef struct		s_object
 	GLushort		*indices;
 	GLfloat			*colors;
 	GLuint			vao_id;
-	GLuint			vbo_ids[2];
+	GLuint			vbo_ids[3];
 }					t_object;
 
 typedef struct		s_image
@@ -70,7 +71,9 @@ typedef struct		s_window
 
 typedef struct		s_core
 {
+	float			anim;
 	t_vec			translate;
+	GLuint			anim_loc;
 	GLuint			y_deg_loc;
 	float			y_deg;
 	t_vec			cam_pos;
@@ -85,6 +88,7 @@ typedef struct		s_core
 	t_object		otest;
 	GLuint			vertex_shader;
 	GLuint			fragment_shader;
+	GLuint			geometry_shader;
 	GLuint			program;
 	t_window		window;
 }					t_core;

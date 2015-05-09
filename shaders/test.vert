@@ -37,11 +37,13 @@ float		deg_to_rad(float x)
 
 uniform mat4 view_matrix, proj_matrix;
 uniform float y_deg;
+uniform float anim;
 
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 in_color;
 
-out vec3 out_color;
+out vec3 out_color1;
+out float out_anim;
 
 void main()
 {
@@ -49,5 +51,6 @@ void main()
 				* rotation_matrix(vec3(0.0, 1.0, 0.0), deg_to_rad(y_deg))
 				* translation_matrix(vec3(0.0, 0.0, -1.0))
 				* vec4(position, 1.0);
-	out_color = in_color;
+	out_color1 = in_color;
+	out_anim = anim;
 }

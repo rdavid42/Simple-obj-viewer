@@ -179,6 +179,8 @@ int			key_hook(unsigned int key, t_core *c)
 		exit(0);
 	else if (key == K_A)
 		c->anim = !c->anim;
+	else if (key == K_T)
+		c->tex_enabled = !c->tex_enabled;
 	return (1);
 }
 
@@ -196,6 +198,10 @@ int			key_hook_repeat(unsigned int key, t_core *c)
 		c->translate.x -= TRANSLATE_SPEED;
 	else if (key == K_KMIN)
 		c->translate.x += TRANSLATE_SPEED;
+	else if (key == K_MULT)
+		c->tex_scale += 0.1;
+	else if (key == K_DIV)
+		c->tex_scale -= 0.1;
 	return (1);
 }
 
@@ -282,6 +288,8 @@ int			loop_hook(t_core *c)
 	glUniformMatrix4fv(c->view_loc, 1, GL_FALSE, c->view_matrix);
 	glUniform1f(c->y_deg_loc, c->y_deg);
 	glUniform1f(c->anim_loc, c->anim);
+	glUniform1f(c->tex_enabled_loc, c->tex_enabled);
+	glUniform1f(c->tex_scale_loc, c->tex_scale);
 	glDrawElements(GL_TRIANGLES, c->otest.indices_size * 3, GL_UNSIGNED_SHORT, 0);
 	check_gl_error(__LINE__);
 	c->y_deg++;
@@ -295,9 +303,9 @@ void		get_locations(t_core *c)
 {
 	c->position_loc = glGetAttribLocation(c->program, "position");
 	c->color_loc = glGetAttribLocation(c->program, "in_color");
-	c->texture_loc = glGetAttribLocation(c->program, "vert_tex_coord");
-
 	c->y_deg_loc = glGetUniformLocation(c->program, "y_deg");
+	c->tex_scale_loc = glGetUniformLocation(c->program, "tex_scale");
+	c->tex_enabled_loc = glGetUniformLocation(c->program, "vert_tex_enabled");
 	c->anim_loc = glGetUniformLocation(c->program, "anim");
 	c->proj_loc = glGetUniformLocation(c->program, "proj_matrix");
 	c->view_loc = glGetUniformLocation(c->program, "view_matrix");
@@ -307,26 +315,14 @@ void		create_buffers(t_core *c)
 {
 	glGenVertexArrays(1, &c->otest.vao_id);
 	glBindVertexArray(c->otest.vao_id);
-
-	glGenBuffers(3, &c->otest.vbo_ids[0]);
-
+	glGenBuffers(2, &c->otest.vbo_ids[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, c->otest.vbo_ids[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * c->otest.vertices_size * 6, c->otest.vertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(c->position_loc);
 	glVertexAttribPointer(c->position_loc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void *)0);
-
 	glEnableVertexAttribArray(c->color_loc);
 	glVertexAttribPointer(c->color_loc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
-/*
-	glEnableVertexAttribArray(c->texture_loc);
-	glVertexAttribPointer(c->texture_loc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void *)(6 * sizeof(GLfloat)));
-*/
-	glBindBuffer(GL_ARRAY_BUFFER, c->otest.vbo_ids[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * c->otest.indices_size * 6, c->otest.tex_coord, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(c->texture_loc);
-	glVertexAttribPointer(c->texture_loc, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, c->otest.vbo_ids[2]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, c->otest.vbo_ids[1]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * c->otest.indices_size * 3, c->otest.indices, GL_STATIC_DRAW);
 	check_gl_error(__LINE__);
 }
@@ -345,7 +341,7 @@ GLuint		load_texture(char const *filename)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	// glGenerateMipmap(GL_TEXTURE_2D);
+	glGenerateMipmap(GL_TEXTURE_2D);
 	free(img);
 	check_gl_error(__LINE__);
 	return (texture);
@@ -360,9 +356,11 @@ int			initialize_core(t_core *c)
 		return (0);
 	c->texture = load_texture("resources/kitten.bmp");
 	get_locations(c);
+	c->tex_scale = 1.0f;
 	c->anim = 0.0f;
 	c->translate = create_vec(0.0f, 0.0f, 0.0f);
-	c->y_deg = 0;
+	c->y_deg = 0.0f;
+	c->tex_enabled = 0.0f;
 	c->cam_pos = create_vec(5.0f, 0.0f, 0.0f);
 	c->cam_look_at = create_vec(0.0f, 0.0f, 0.0f);
 	create_buffers(c);

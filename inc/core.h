@@ -20,12 +20,15 @@
 # define K_UP					126
 # define K_DOWN					125
 # define K_A					0
+# define K_T					17
 # define K_KPLUS				69
 # define K_KMIN					78
 # define M_LEFT					1
 # define M_RIGHT				2
 # define M_S_UP					4
 # define M_S_DOWN				5
+# define K_MULT					67
+# define K_DIV					75
 
 # define TRANSLATE_SPEED		0.1f
 
@@ -42,9 +45,8 @@ typedef struct		s_object
 	int				indices_size;
 	GLfloat			*vertices;
 	GLushort		*indices;
-	GLfloat			*tex_coord;
 	GLuint			vao_id;
-	GLuint			vbo_ids[3];
+	GLuint			vbo_ids[2];
 }					t_object;
 
 typedef struct		s_image
@@ -71,24 +73,27 @@ typedef struct		s_window
 
 typedef struct		s_core
 {
-	GLuint			texture;
-
-	float			anim;
-	t_vec			translate;
 	GLuint			anim_loc;
 	GLuint			y_deg_loc;
-	float			y_deg;
-	t_vec			cam_pos;
-	t_vec			cam_look_at;
+	GLuint			tex_enabled_loc;
 	GLuint			position_loc;
 	GLuint			color_loc;
 	GLuint			texture_loc;
 	GLuint			proj_loc;
 	GLuint			view_loc;
+	GLuint			tex_scale_loc;
+	float			tex_scale;
+	float			anim;
+	t_vec			translate;
+	float			y_deg;
+	float			tex_enabled;
+	t_vec			cam_pos;
+	t_vec			cam_look_at;
 	float			proj_matrix[16];
 	float			view_matrix[16];
 	void			*mlx_init;
 	t_object		otest;
+	GLuint			texture;
 	GLuint			vertex_shader;
 	GLuint			fragment_shader;
 	GLuint			geometry_shader;

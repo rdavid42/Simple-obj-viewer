@@ -38,18 +38,21 @@ float		deg_to_rad(float x)
 uniform mat4 view_matrix, proj_matrix;
 uniform float y_deg;
 uniform float anim;
+uniform float vert_tex_enabled;
+uniform float tex_scale;
 
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 in_color;
-layout(location = 2) in vec2 vert_tex_coord;
 
 out vec3 out_color1;
 out float out_anim;
 out vec2 geom_tex_coord;
+out float geom_tex_enabled;
 
 void main()
 {
-	geom_tex_coord = vert_tex_coord;
+	geom_tex_enabled = vert_tex_enabled;
+	geom_tex_coord = vec2(position.z * tex_scale, position.y * tex_scale);
 	gl_Position = proj_matrix * view_matrix
 				* rotation_matrix(vec3(0.0, 1.0, 0.0), deg_to_rad(y_deg))
 				* translation_matrix(vec3(0.0, 0.0, -1.0))

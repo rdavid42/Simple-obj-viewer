@@ -2,11 +2,6 @@
 
 #define M_PI 3.1415926535897932384626433832795
 
-// varying -> out
-// attribute -> in
-
-// uniform => global for all vertices in a draw call
-
 mat4		rotation_matrix(vec3 axis, float angle)
 {
 	float		s = sin(angle);

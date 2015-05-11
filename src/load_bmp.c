@@ -23,17 +23,6 @@ static int				error_msg(char const *msg)
 	return (0);
 }
 
-static void				print_bmp_info(t_bmp *bmp)
-{
-	dprintf(1, "total size: %d bytes\n", bmp->bmp_size);
-	dprintf(1, "data offset: %d bytes\n", bmp->data_offset);
-	dprintf(1, "width: %d pixels\n", bmp->width);
-	dprintf(1, "height: %d pixels\n", bmp->height);
-	dprintf(1, "bpp: %d bits\n", bmp->bpp);
-	dprintf(1, "data size: %d bytes\n", bmp->raw_bmp_size);
-	dprintf(1, "unused header size: %d bytes\n", bmp->data_offset - (BMP_HEADER_SIZE + DIB_HEADER_SIZE));
-}
-
 static int				get_bmp_info(int fd, t_bmp *bmp)
 {
 	int					unused_header_size;
@@ -60,15 +49,40 @@ static int				get_bmp_info(int fd, t_bmp *bmp)
 	return (1);
 }
 
+static int				write_data(t_bmp *bmp, unsigned char *data, int fd)
+{
+	unsigned char		buf[3];
+	uint32_t			i;
+	uint32_t			j;
+	uint32_t			k;
+
+	k = 0;
+	i = 0;
+	while (i < bmp->height)
+	{
+		j = 0;
+		while (j < bmp->width)
+		{
+			if (read(fd, buf, 3) == -1)
+				return (0);
+			data[k++] = buf[2];
+			data[k++] = buf[1];
+			data[k++] = buf[0];
+			j++;
+		}
+		if (j % 4)
+			if (read(fd, buf, 1) == -1)
+				return (0);
+		i++;
+	}
+	return (1);
+}
+
 void					*load_bmp(char const *filename, t_bmp *bmp_ret)
 {
 	int					fd;
 	t_bmp				bmp;
 	unsigned char		*data;
-	unsigned char		buf[3];
-	uint32_t			i;
-	uint32_t			j;
-	uint32_t			k;
 
 	if ((fd = open(filename, O_RDONLY)) == -1)
 		return (perror_ret(FILE_E1));
@@ -78,28 +92,10 @@ void					*load_bmp(char const *filename, t_bmp *bmp_ret)
 		return (perror_ret(HEADER_E3));
 	if (!get_bmp_info(fd, &bmp))
 		return (NULL);
-	print_bmp_info(&bmp);
 	if (!(data = (unsigned char *)malloc(sizeof(unsigned char) * bmp.raw_bmp_size)))
 		return (perror_ret(MALLOC_E1));
-	k = 0;
-	i = 0;
-	while (i < bmp.height)
-	{
-		j = 0;
-		while (j < bmp.width)
-		{
-			read(fd, buf, 3);
-			data[k++] = buf[2];
-			data[k++] = buf[1];
-			data[k++] = buf[0];
-			j++;
-		}
-		if (j % 4)
-			read(fd, buf, 1);
-		i++;
-	}
-	/*if (read(fd, data, bmp.raw_bmp_size) == -1)
-		return (perror_ret(DATA_E1));*/
+	if (!write_data(&bmp, data, fd))
+		return (NULL);
 	close(fd);
 	if (bmp_ret != NULL)
 		*bmp_ret = bmp;

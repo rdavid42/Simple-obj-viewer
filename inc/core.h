@@ -7,6 +7,11 @@
 # include <mlx.h>
 # include "mlx_opengl.h"
 
+# include <stdio.h>
+# include <math.h>
+
+// # define M_PI					3.1415926535897932384626433832795
+
 # define BUFSIZE				16384
 
 # define WW						1920
@@ -122,5 +127,38 @@ int					print_error(char const *msg, int const code);
 void				*print_error_p(char const *msg);
 int					parse_object(char const *filename, t_object *o);
 int					loop_hook(t_core *c);
-
+void				cross_product(t_vec *a, t_vec *b, t_vec *r);
+void				normalize(t_vec *a);
+void				set_identity_matrix(float *mat, int size);
+void				multiply_matrix(float *a, float *b);
+void				set_translation_matrix(float *mat, float x,
+											float y, float z);
+void				build_projection_matrix(t_core *c, float fov,
+											float near_p, float far_p);
+t_vec				create_vec(float x, float y, float z);
+void				set_view_matrix(float *view_matrix, t_vec *dir,
+									t_vec *right, t_vec *up);
+void				set_camera(float *view_matrix, t_vec pos, t_vec look_at);
+int					expose_hook(t_core *core);
+void				get_image_data(t_image *img);
+void				update_image(t_window *window);
+void				change_rotation(float *rot);
+int					key_hook(unsigned int key, t_core *c);
+int					key_hook_repeat(unsigned int key, t_core *c);
+int					mouse_hook(int button, int x, int y, t_core *core);
+int					mouse_event(int x, int y, t_core *core);
+int					create_image(t_window *w, t_image *img);
+void				check_gl_error(int code);
+int					create_window(t_core *core);
+int					loop_hook(t_core *c);
+void				get_locations(t_core *c);
+void				create_buffers(t_core *c);
+GLuint				load_texture(char const *filename);
+int					initialize_core(t_core *c);
+void				release_object(t_object *o);
+void				init_object(t_object *o);
+int					alloc_object(t_object *o);
+int					get_buffer_next_line_size(char *file, int *offset);
+char				*get_buffer_next_line(char *file, int *file_size,
+										int *offset, int *line_size);
 #endif

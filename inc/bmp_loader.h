@@ -11,6 +11,7 @@
 # define BPP_E1					"BMP must have 24 bpp!\n"
 # define MALLOC_E1				"Failed to allocate BMP image"
 # define DATA_E1				"Failed to read BMP data"
+# define DATA_E2				"Failed to read data padding"
 # define BI_RGB					0
 # define BMP_HEADER_SIZE		14
 # define DIB_HEADER_SIZE		40

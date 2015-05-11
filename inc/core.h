@@ -42,10 +42,9 @@ typedef struct		s_object
 	int				indices_size;
 	GLfloat			*vertices;
 	GLushort		*indices;
-	GLfloat			*colors;
-	GLfloat			*texture_coord;
+	GLfloat			*tex_coord;
 	GLuint			vao_id;
-	GLuint			vbo_ids[4];
+	GLuint			vbo_ids[3];
 }					t_object;
 
 typedef struct		s_image
@@ -73,8 +72,7 @@ typedef struct		s_window
 typedef struct		s_core
 {
 	GLuint			texture;
-	GLuint			texture_loc;
-	GLuint			tex_coord_loc;
+
 	float			anim;
 	t_vec			translate;
 	GLuint			anim_loc;
@@ -84,6 +82,7 @@ typedef struct		s_core
 	t_vec			cam_look_at;
 	GLuint			position_loc;
 	GLuint			color_loc;
+	GLuint			texture_loc;
 	GLuint			proj_loc;
 	GLuint			view_loc;
 	float			proj_matrix[16];

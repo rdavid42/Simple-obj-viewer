@@ -2,17 +2,18 @@
 
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
+
+in vec2 geom_tex_coord[];
 in vec3 out_color1[];
 in float out_anim[];
+
 out vec3 out_color2;
-in vec2 geom_tex_coord[];
 out vec2 frag_tex_coord;
 
 void main()
 {
 	float		grey;
 
-	frag_tex_coord = geom_tex_coord[0];
 	if (out_anim[0] == 0.0f)
 		out_color2 = vec3(out_color1[0].x, out_color1[0].y, out_color1[0].z);
 	else
@@ -28,10 +29,13 @@ void main()
 			grey = 0.8;
 		out_color2 = vec3(grey, grey, grey);
 	}
+	frag_tex_coord = geom_tex_coord[0];
 	gl_Position = gl_in[0].gl_Position;
 	EmitVertex();
+	frag_tex_coord = geom_tex_coord[1];
 	gl_Position = gl_in[1].gl_Position;
 	EmitVertex();
+	frag_tex_coord = geom_tex_coord[2];
 	gl_Position = gl_in[2].gl_Position;
 	EmitVertex();
 	EndPrimitive();

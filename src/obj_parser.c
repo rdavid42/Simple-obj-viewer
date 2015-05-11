@@ -8,27 +8,21 @@ void				init_object(t_object *o)
 	o->vertices_size = 0;
 	o->indices_size = 0;
 	o->vertices = NULL;
-	o->colors = NULL;
 	o->indices = NULL;
 }
 
 int					alloc_object(t_object *o)
 {
 	if (o->vertices_size > 0)
-	{
 		if (!(o->vertices =
-			(GLfloat *)malloc(sizeof(GLfloat) * o->vertices_size * 3)))
+			(GLfloat *)malloc(sizeof(GLfloat) * o->vertices_size * 6)))
 			return (print_error("Failed to allocate vertices !\n", 0));
-	}
 	if (o->indices_size > 0)
 	{
 		if (!(o->indices =
 			(GLushort *)malloc(sizeof(GLushort) * o->indices_size * 3)))
 			return (print_error("Failed to allocate indices !\n", 0));
-		if (!(o->colors =
-			(GLfloat *)malloc(sizeof(GLfloat) * o->indices_size * 3)))
-			return (print_error("Failed to allocate colors !\n", 0));
-		if (!(o->texture_coord =
+		if (!(o->tex_coord =
 			(GLfloat *)malloc(sizeof(GLfloat) * o->indices_size * 6)))
 			return (print_error("Failed to allocate texture coordinates !\n", 0));
 	}
@@ -89,9 +83,9 @@ int					parse_object_data(char *file, int *file_size, t_object *o)
 	int						i[4];
 	int						j[3];
 	GLfloat					grey;
-	static GLfloat const	grey_lim[3] = { 0.2f, 0.2f, 0.8f };
+	static GLfloat const	grey_lim[3] = { 0.2f, 0.2f, 1.0f };
+	// static GLfloat const	tex_coord[4][2] = { { 0.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, 0.0f } };
 
-	(void)o;
 	index = 0;
 	line = NULL;
 	j[0] = 0;
@@ -106,7 +100,18 @@ int					parse_object_data(char *file, int *file_size, t_object *o)
 			{
 				sscanf(line, "v %f %f %f", &o->vertices[j[0]],
 					&o->vertices[j[0] + 1], &o->vertices[j[0] + 2]);
-				j[0] += 3;
+				o->vertices[j[0] + 3] = grey;
+				o->vertices[j[0] + 4] = grey;
+				o->vertices[j[0] + 5] = grey;
+/*				o->vertices[j[0] + 6] = tex_coord[j[2]][0];
+				o->vertices[j[0] + 7] = tex_coord[j[2]][1];
+				j[2]++;
+				if (j[2] == 4)
+					j[2] = 0;*/
+				grey += grey_lim[1];
+				if (grey >= grey_lim[2])
+					grey = grey_lim[0];
+				j[0] += 6;//8
 			}
 			else if (!sncmp(line, "f ", 2))
 			{
@@ -119,26 +124,21 @@ int					parse_object_data(char *file, int *file_size, t_object *o)
 					o->indices[j[1] + 3] = i[0] - 1;
 					o->indices[j[1] + 4] = i[2] - 1;
 					o->indices[j[1] + 5] = i[3] - 1;
-					o->colors[j[1] + 0] = grey;
-					o->colors[j[1] + 1] = grey;
-					o->colors[j[1] + 2] = grey;
-					o->colors[j[1] + 3] = grey;
-					o->colors[j[1] + 4] = grey;
-					o->colors[j[1] + 5] = grey;
 
-					o->texture_coord[j[2] + 0] = 0.0f;
-					o->texture_coord[j[2] + 1] = 0.0f;
-					o->texture_coord[j[2] + 2] = 1.0f;
-					o->texture_coord[j[2] + 3] = 0.0f;
-					o->texture_coord[j[2] + 4] = 0.0f;
-					o->texture_coord[j[2] + 5] = 1.0f;
+					o->tex_coord[j[2] + 0] = 1.0f;
+					o->tex_coord[j[2] + 1] = 1.0f;
+					o->tex_coord[j[2] + 2] = 1.0f;
+					o->tex_coord[j[2] + 3] = 0.0f;
+					o->tex_coord[j[2] + 4] = 0.0f;
+					o->tex_coord[j[2] + 5] = 1.0f;
 
-					o->texture_coord[j[2] + 6] = 1.0f;
-					o->texture_coord[j[2] + 7] = 1.0f;
-					o->texture_coord[j[2] + 8] = 0.0f;
-					o->texture_coord[j[2] + 9] = 0.0f;
-					o->texture_coord[j[2] + 10] = 1.0f;
-					o->texture_coord[j[2] + 11] = 0.0f;
+					o->tex_coord[j[2] + 6] = 1.0f;
+					o->tex_coord[j[2] + 7] = 1.0f;
+					o->tex_coord[j[2] + 8] = 0.0f;
+					o->tex_coord[j[2] + 9] = 1.0f;
+					o->tex_coord[j[2] + 10] = 0.0f;
+					o->tex_coord[j[2] + 11] = 0.0f;
+
 					j[2] += 12;
 					j[1] += 6;
 				}
@@ -147,15 +147,14 @@ int					parse_object_data(char *file, int *file_size, t_object *o)
 					o->indices[j[1] + 0] = i[0] - 1;
 					o->indices[j[1] + 1] = i[1] - 1;
 					o->indices[j[1] + 2] = i[2] - 1;
-					o->colors[j[1] + 0] = grey;
-					o->colors[j[1] + 1] = grey;
-					o->colors[j[1] + 2] = grey;
-					o->texture_coord[j[2] + 0] = 0.0f;
-					o->texture_coord[j[2] + 1] = 0.0f;
-					o->texture_coord[j[2] + 2] = 1.0f;
-					o->texture_coord[j[2] + 3] = 0.0f;
-					o->texture_coord[j[2] + 4] = 0.0f;
-					o->texture_coord[j[2] + 5] = 1.0f;
+
+					o->tex_coord[j[2] + 0] = 0.0f;
+					o->tex_coord[j[2] + 1] = 0.0f;
+					o->tex_coord[j[2] + 2] = 1.0f;
+					o->tex_coord[j[2] + 3] = 0.0f;
+					o->tex_coord[j[2] + 4] = 1.0f;
+					o->tex_coord[j[2] + 5] = 1.0f;
+
 					j[2] += 6;
 					j[1] += 3;
 				}
@@ -166,9 +165,6 @@ int					parse_object_data(char *file, int *file_size, t_object *o)
 					o->indices[j[1] + 2] = 0.0f;
 					j[1] += 3;
 				}
-				grey += grey_lim[1];
-				if (grey >= grey_lim[2])
-					grey = grey_lim[0];
 			}
 		}
 		free(line);

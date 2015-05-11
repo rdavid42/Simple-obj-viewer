@@ -173,14 +173,28 @@ void		update_image(t_window *window)
 							// window->img.data, 0, 0);
 }
 
+void		change_rotation(float *rot)
+{
+	*rot += 1.0f;
+	if (*rot == 2.0f)
+		*rot = -1.0f;
+}
+
 int			key_hook(unsigned int key, t_core *c)
 {
+	dprintf(2, "%d\n", key);
 	if (key == K_ESC)
 		exit(0);
 	else if (key == K_A)
 		c->anim = !c->anim;
 	else if (key == K_T)
 		c->tex_enabled = !c->tex_enabled;
+	else if (key == K_1 || key == K_N1)
+		change_rotation(&c->rotations.x);
+	else if (key == K_2 || key == K_N2)
+		change_rotation(&c->rotations.y);
+	else if (key == K_3 || key == K_N3)
+		change_rotation(&c->rotations.z);
 	return (1);
 }
 
@@ -290,6 +304,7 @@ int			loop_hook(t_core *c)
 	glUniform1f(c->anim_loc, c->anim);
 	glUniform1f(c->tex_enabled_loc, c->tex_enabled);
 	glUniform1f(c->tex_scale_loc, c->tex_scale);
+	glUniform3f(c->rotations_loc, c->rotations.x, c->rotations.y, c->rotations.z);
 	glDrawElements(GL_TRIANGLES, c->otest.indices_size * 3, GL_UNSIGNED_SHORT, 0);
 	check_gl_error(__LINE__);
 	c->y_deg++;
@@ -306,6 +321,7 @@ void		get_locations(t_core *c)
 	c->y_deg_loc = glGetUniformLocation(c->program, "y_deg");
 	c->tex_scale_loc = glGetUniformLocation(c->program, "tex_scale");
 	c->tex_enabled_loc = glGetUniformLocation(c->program, "vert_tex_enabled");
+	c->rotations_loc = glGetUniformLocation(c->program, "rot");
 	c->anim_loc = glGetUniformLocation(c->program, "anim");
 	c->proj_loc = glGetUniformLocation(c->program, "proj_matrix");
 	c->view_loc = glGetUniformLocation(c->program, "view_matrix");
@@ -356,6 +372,7 @@ int			initialize_core(t_core *c)
 		return (0);
 	c->texture = load_texture("resources/kitten.bmp");
 	get_locations(c);
+	c->rotations = create_vec(0.0f, 1.0f, 0.0f);
 	c->tex_scale = 1.0f;
 	c->anim = 0.0f;
 	c->translate = create_vec(0.0f, 0.0f, 0.0f);

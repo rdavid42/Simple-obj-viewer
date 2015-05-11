@@ -29,6 +29,12 @@
 # define M_S_DOWN				5
 # define K_MULT					67
 # define K_DIV					75
+# define K_N1					84
+# define K_1					18
+# define K_N2					85
+# define K_2					19
+# define K_N3					86
+# define K_3					20
 
 # define TRANSLATE_SPEED		0.1f
 
@@ -82,6 +88,8 @@ typedef struct		s_core
 	GLuint			proj_loc;
 	GLuint			view_loc;
 	GLuint			tex_scale_loc;
+	GLuint			rotations_loc;
+	t_vec			rotations;
 	float			tex_scale;
 	float			anim;
 	t_vec			translate;

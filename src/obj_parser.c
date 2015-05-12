@@ -30,21 +30,12 @@ static void			fill_vertices(t_object *o, char *line, int *j)
 	j[0] += 6;
 }
 
-static int			get_indices(char *line, int *i)
-{
-	int				r;
-
-	r = sscanf(line, "f %d %d %d %d", &i[0], &i[1], &i[2], &i[3]);
-	r = !r ? sscanf(line, "f %d// %d// %d// %d", &i[0], &i[1], &i[2], &i[3]) : r;
-	return (r);
-}
-
 static void			fill_indices(t_object *o, char *line, int *j)
 {
 	int				r;
 	int				i[4];
 
-	r = get_indices(line, i);
+	r = sscanf(line, "f %d %d %d %d", &i[0], &i[1], &i[2], &i[3]);
 	if (r == 4)
 	{
 		o->indices[j[1] + 0] = i[0] - 1;
@@ -107,7 +98,7 @@ static void			count_object_data(char *file, int *file_size, t_object *o)
 			o->vertices_size++;
 		else if (!sncmp(line, "f ", 2))
 		{
-			r = get_indices(line, i);
+			r = sscanf(line, "f %d %d %d %d", &i[0], &i[1], &i[2], &i[3]);
 			if (r == 4)
 				o->indices_size += 2;
 			if (r == 3)
@@ -128,8 +119,6 @@ int					parse_object(char const *filename, t_object *o)
 		return (0);
 	file_size = slen(file);
 	count_object_data(file, &file_size, o);
-	dprintf(2, "vertices: %d, indices: %d\n", o->vertices_size,
-											o->indices_size);
 	if (!alloc_object(o))
 		return (0);
 	parse_object_data(file, &file_size, o);

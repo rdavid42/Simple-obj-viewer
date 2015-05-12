@@ -45,10 +45,10 @@ out float out_anim;
 out vec2 geom_tex_coord;
 out float geom_tex_enabled;
 
-void main()
+void		main()
 {
 	geom_tex_enabled = vert_tex_enabled;
-	geom_tex_coord = vec2(position.z * tex_scale, position.y * tex_scale);
+	geom_tex_coord = vec2((position.x + position.z) * tex_scale, (position.x + position.y) * tex_scale);
 	gl_Position = proj_matrix * view_matrix
 				* rotation_matrix(vec3(rot.x, rot.y, rot.z), deg_to_rad(y_deg))
 				* translation_matrix(vec3(0.0, 0.0, -1.0))

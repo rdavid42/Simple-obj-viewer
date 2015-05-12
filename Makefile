@@ -13,12 +13,16 @@ FLAGS				=	-Ofast -g -Wall -Wextra -Werror
 VARS				=	-D_DEBUG
 NAME				=	scop
 
-LIBS				=	-framework OpenGL -framework AppKit ./minilibx_macos/libmlx.a -lm
+LIBS				=	-framework OpenGL -framework AppKit -lm
+MINILIBX			=	./minilibx_macos/libmlx.a
 
 all: $(NAME)
 
-$(NAME): $(OBJ_FILES)
-	@$(CC) $(OBJ_FILES) $(FLAGS) $(VARS) $(HEADER) -o $(NAME) $(LIBS)
+$(NAME): $(MINILIBX) $(OBJ_FILES)
+	@$(CC) $(OBJ_FILES) $(FLAGS) $(VARS) $(HEADER) -o $(NAME) $(LIBS) $(MINILIBX)
+
+$(MINILIBX):
+	@make -C minilibx_macos
 
 $(patsubst %, $(OBJ_PATH)%,%.o): $(SRC_PATH)$(notdir %.$(STYPE))
 	@mkdir -p $(OBJ_PATH)
@@ -28,6 +32,7 @@ clean:
 	@rm -rf $(OBJ_PATH)
 
 fclean: clean
+#	@make -C minilibx_macos clean
 	@rm -rf $(OBJ_PATH)
 	@rm -f $(NAME)
 

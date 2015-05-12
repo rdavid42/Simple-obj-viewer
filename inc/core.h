@@ -19,8 +19,7 @@
 # include <mlx.h>
 # include "mlx_opengl.h"
 
-# include <stdio.h>
-# include <math.h>
+# define TEXTURE_MAX			5
 
 # define BUFSIZE				16384
 
@@ -50,6 +49,8 @@
 # define K_2					19
 # define K_N3					86
 # define K_3					20
+# define K_HOME					115
+# define K_END					119
 
 # define TRANSLATE_SPEED		0.1f
 
@@ -99,7 +100,6 @@ typedef struct		s_core
 	GLuint			tex_enabled_loc;
 	GLuint			position_loc;
 	GLuint			color_loc;
-	GLuint			texture_loc;
 	GLuint			proj_loc;
 	GLuint			view_loc;
 	GLuint			tex_scale_loc;
@@ -116,7 +116,9 @@ typedef struct		s_core
 	float			view_matrix[16];
 	void			*mlx_init;
 	t_object		otest;
-	GLuint			texture;
+	int				texture_max;
+	int				current_texture;
+	GLuint			textures[TEXTURE_MAX];
 	GLuint			vertex_shader;
 	GLuint			fragment_shader;
 	GLuint			geometry_shader;
@@ -171,4 +173,6 @@ int					alloc_object(t_object *o);
 int					get_buffer_next_line_size(char *file, int *offset);
 char				*get_buffer_next_line(char *file, int *file_size,
 										int *offset, int *line_size);
+void				load_textures(t_core *c);
+
 #endif

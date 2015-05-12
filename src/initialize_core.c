@@ -19,7 +19,7 @@ int			initialize_core(t_core *c)
 	create_window(c);
 	if (!init_shaders(c))
 		return (0);
-	c->texture = load_texture("resources/kitten.bmp");
+	load_textures(c);
 	get_locations(c);
 	c->rotations = create_vec(0.0f, 1.0f, 0.0f);
 	c->tex_scale = 1.0f;

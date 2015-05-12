@@ -50,8 +50,9 @@ static int				get_bmp_info(int fd, t_bmp *bmp)
 	if ((bmp->compression = *(uint32_t *)&bmp->dib_header[16]) != BI_RGB)
 		return (error_msg(COMPRESSION_E1));
 	bmp->raw_bmp_size = *(uint32_t *)&bmp->dib_header[20];
-	unused_header_size = bmp->data_offset -
-						(BMP_HEADER_SIZE + DIB_HEADER_SIZE);
+	unused_header_size = bmp->data_offset - (BMP_HSIZE + DIB_HSIZE);
+	if (!bmp->raw_bmp_size)
+		bmp->raw_bmp_size = bmp->bmp_size - (BMP_HSIZE + DIB_HSIZE);
 	if (unused_header_size > 0)
 	{
 		unused_header = (unsigned char *)malloc(unused_header_size);
@@ -59,6 +60,17 @@ static int				get_bmp_info(int fd, t_bmp *bmp)
 		free(unused_header);
 	}
 	return (1);
+}
+
+static void				print_bmp_info(t_bmp *bmp)
+{
+	dprintf(2, "--------------------\n");
+	dprintf(2, "bmp size: %d bytes\n", bmp->bmp_size);
+	dprintf(2, "data offset: %d bytes\n", bmp->data_offset);
+	dprintf(2, "width: %d pixels\n", bmp->width);
+	dprintf(2, "height: %d pixels\n", bmp->height);
+	dprintf(2, "bpp: %d bits\n", bmp->bpp);
+	dprintf(2, "raw size: %d bytes\n", bmp->raw_bmp_size);
 }
 
 static int				write_data(t_bmp *bmp, unsigned char *data, int fd)
@@ -98,9 +110,9 @@ void					*load_bmp(char const *filename, t_bmp *bmp_ret)
 
 	if ((fd = open(filename, O_RDONLY)) == -1)
 		return (perror_ret(FILE_E1));
-	if (read(fd, bmp.bmp_header, BMP_HEADER_SIZE) == -1)
+	if (read(fd, bmp.bmp_header, BMP_HSIZE) == -1)
 		return (perror_ret(HEADER_E1));
-	if (read(fd, bmp.dib_header, DIB_HEADER_SIZE) == -1)
+	if (read(fd, bmp.dib_header, DIB_HSIZE) == -1)
 		return (perror_ret(HEADER_E3));
 	if (!get_bmp_info(fd, &bmp))
 		return (NULL);
@@ -112,5 +124,6 @@ void					*load_bmp(char const *filename, t_bmp *bmp_ret)
 	close(fd);
 	if (bmp_ret != NULL)
 		*bmp_ret = bmp;
+	print_bmp_info(&bmp);
 	return (data);
 }

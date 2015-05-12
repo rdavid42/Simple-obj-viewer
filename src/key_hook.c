@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include "core.h"
 
@@ -30,5 +31,7 @@ int			key_hook(unsigned int key, t_core *c)
 		change_rotation(&c->rotations.y);
 	else if (key == K_3 || key == K_N3)
 		change_rotation(&c->rotations.z);
+	else if (key == K_HOME)
+		c->current_texture = (c->current_texture + 1) % c->texture_max;
 	return (1);
 }

@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <math.h>
 #include "core.h"
 
 void		build_projection_matrix(t_core *c, float fov,

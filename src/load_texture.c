@@ -20,7 +20,8 @@ GLuint		load_texture(char const *filename)
 	unsigned char		*img;
 	t_bmp				bmp;
 
-	img = load_bmp(filename, &bmp);
+	if (!(img = load_bmp(filename, &bmp)))
+		return (print_error("Failed to load bmp !\n", 0));
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bmp.width, bmp.height,

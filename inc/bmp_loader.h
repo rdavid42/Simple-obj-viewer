@@ -25,16 +25,16 @@
 # define DATA_E1				"Failed to read BMP data"
 # define DATA_E2				"Failed to read data padding"
 # define BI_RGB					0
-# define BMP_HEADER_SIZE		14
-# define DIB_HEADER_SIZE		40
+# define BMP_HSIZE				14
+# define DIB_HSIZE				40
 
 typedef struct					s_bmp
 {
 	int							fd;
-	unsigned char				bmp_header[BMP_HEADER_SIZE];
+	unsigned char				bmp_header[BMP_HSIZE];
 	uint32_t					bmp_size;
 	uint32_t					data_offset;
-	unsigned char				dib_header[DIB_HEADER_SIZE];
+	unsigned char				dib_header[DIB_HSIZE];
 	uint32_t					width;
 	uint32_t					height;
 	uint16_t					bpp;

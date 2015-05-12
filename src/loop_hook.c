@@ -19,6 +19,7 @@ int			loop_hook(t_core *c)
 							c->translate.z);
 	c->cam_look_at = create_vec(c->translate.x, c->translate.y,
 							c->translate.z);
+	glBindTexture(GL_TEXTURE_2D, c->textures[c->current_texture]);
 	set_camera(c->view_matrix, c->cam_pos, c->cam_look_at);
 	glUseProgram(c->program);
 	glUniformMatrix4fv(c->proj_loc, 1, GL_FALSE, c->proj_matrix);

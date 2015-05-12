@@ -22,9 +22,9 @@ int			main(int argc, char **argv)
 	if (!parse_object(argv[1], &core.otest))
 		return (print_error("Failed to parse object !\n", 0));
 	if (!initialize_core(&core))
-		return (0);
+		return (print_error("Failed to initialize !\n", 0));
 	mlx_loop(core.mlx_init);
 	(void)argc;
 	(void)argv;
-	return (0);
+	return (1);
 }

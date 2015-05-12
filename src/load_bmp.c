@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   load_bmp.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rdavid <rdavid@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2015/05/12 09:54:01 by rdavid            #+#    #+#             */
+/*   Updated: 2015/05/12 09:54:01 by rdavid           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -39,7 +50,8 @@ static int				get_bmp_info(int fd, t_bmp *bmp)
 	if ((bmp->compression = *(uint32_t *)&bmp->dib_header[16]) != BI_RGB)
 		return (error_msg(COMPRESSION_E1));
 	bmp->raw_bmp_size = *(uint32_t *)&bmp->dib_header[20];
-	unused_header_size = bmp->data_offset - (BMP_HEADER_SIZE + DIB_HEADER_SIZE);
+	unused_header_size = bmp->data_offset -
+						(BMP_HEADER_SIZE + DIB_HEADER_SIZE);
 	if (unused_header_size > 0)
 	{
 		unused_header = (unsigned char *)malloc(unused_header_size);
@@ -92,7 +104,8 @@ void					*load_bmp(char const *filename, t_bmp *bmp_ret)
 		return (perror_ret(HEADER_E3));
 	if (!get_bmp_info(fd, &bmp))
 		return (NULL);
-	if (!(data = (unsigned char *)malloc(sizeof(unsigned char) * bmp.raw_bmp_size)))
+	if (!(data = (unsigned char *)malloc(sizeof(unsigned char)
+										* bmp.raw_bmp_size)))
 		return (perror_ret(MALLOC_E1));
 	if (!write_data(&bmp, data, fd))
 		return (NULL);

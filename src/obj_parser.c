@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   obj_parser.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rdavid <rdavid@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2015/05/12 09:59:02 by rdavid            #+#    #+#             */
+/*   Updated: 2015/05/12 09:59:02 by rdavid           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,12 +30,21 @@ static void			fill_vertices(t_object *o, char *line, int *j)
 	j[0] += 6;
 }
 
+static int			get_indices(char *line, int *i)
+{
+	int				r;
+
+	r = sscanf(line, "f %d %d %d %d", &i[0], &i[1], &i[2], &i[3]);
+	r = !r ? sscanf(line, "f %d// %d// %d// %d", &i[0], &i[1], &i[2], &i[3]) : r;
+	return (r);
+}
+
 static void			fill_indices(t_object *o, char *line, int *j)
 {
 	int				r;
 	int				i[4];
 
-	r = sscanf(line, "f %d %d %d %d", &i[0], &i[1], &i[2], &i[3]);
+	r = get_indices(line, i);
 	if (r == 4)
 	{
 		o->indices[j[1] + 0] = i[0] - 1;
@@ -77,7 +97,7 @@ static void			count_object_data(char *file, int *file_size, t_object *o)
 	char			*line;
 	int				size;
 	int				r;
-	int				t;
+	int				i[4];
 
 	index = 0;
 	line = NULL;
@@ -87,7 +107,7 @@ static void			count_object_data(char *file, int *file_size, t_object *o)
 			o->vertices_size++;
 		else if (!sncmp(line, "f ", 2))
 		{
-			r = sscanf(line, "f %d %d %d %d", &t, &t, &t, &t);
+			r = get_indices(line, i);
 			if (r == 4)
 				o->indices_size += 2;
 			if (r == 3)

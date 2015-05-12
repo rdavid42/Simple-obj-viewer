@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   read_file.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rdavid <rdavid@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2015/05/12 09:59:20 by rdavid            #+#    #+#             */
+/*   Updated: 2015/05/12 09:59:33 by rdavid           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -27,7 +38,8 @@ static int		file_size(char const *filename)
 	return (count);
 }
 
-void			copy_file_chunk(char *file, char *buf, int *size, int *offset)
+void			copy_file_chunk(char *file, char *buf,
+								int *size, int *offset)
 {
 	int			i;
 

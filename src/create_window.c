@@ -1,10 +1,22 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   create_window.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rdavid <rdavid@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2015/05/12 09:52:50 by rdavid            #+#    #+#             */
+/*   Updated: 2015/05/12 09:52:50 by rdavid           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "core.h"
 
 int			create_window(t_core *core)
 {
-	t_window				* const w = &core->window;
+	t_window		*w;
 
+	w = &core->window;
 	w->init = mlx_new_opengl_window(core->mlx_init, WW, WH, "Scop");
 	mlx_opengl_window_set_context(w->init);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);

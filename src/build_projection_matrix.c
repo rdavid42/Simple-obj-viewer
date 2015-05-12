@@ -1,7 +1,19 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   build_projection_matrix.c                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rdavid <rdavid@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2015/05/12 09:52:05 by rdavid            #+#    #+#             */
+/*   Updated: 2015/05/12 09:52:05 by rdavid           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "core.h"
 
-void		build_projection_matrix(t_core *c, float fov, float near_p, float far_p)
+void		build_projection_matrix(t_core *c, float fov,
+									float near_p, float far_p)
 {
 	float const		f = 1.0f / tan(fov * (M_PI / 360.0));
 	float const		ratio = (1.0f * c->window.width) / c->window.height;

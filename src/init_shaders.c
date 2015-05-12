@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   init_shaders.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rdavid <rdavid@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2015/05/12 09:53:35 by rdavid            #+#    #+#             */
+/*   Updated: 2015/05/12 09:53:36 by rdavid           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include <stdlib.h>
 #include <string.h>
@@ -5,11 +16,14 @@
 
 static int			load_shaders(t_core *c)
 {
-	if (!(c->vertex_shader = load_shader(GL_VERTEX_SHADER, "./shaders/test.vert")))
+	if (!(c->vertex_shader = load_shader(GL_VERTEX_SHADER,
+										"./shaders/vertex_shader.gls")))
 		return (print_error("Could not load vertex shader !\n", 0));
-	if (!(c->fragment_shader = load_shader(GL_FRAGMENT_SHADER, "./shaders/test.frag")))
+	if (!(c->fragment_shader = load_shader(GL_FRAGMENT_SHADER,
+										"./shaders/fragment_shader.gls")))
 		return (print_error("Could not load fragment shader !\n", 0));
-	if (!(c->geometry_shader = load_shader(GL_GEOMETRY_SHADER, "./shaders/test.geom")))
+	if (!(c->geometry_shader = load_shader(GL_GEOMETRY_SHADER,
+										"./shaders/geometry_shader.gls")))
 		return (print_error("Could not load geometry shader !\n", 0));
 	return (1);
 }

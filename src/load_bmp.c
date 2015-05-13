@@ -62,17 +62,6 @@ static int				get_bmp_info(int fd, t_bmp *bmp)
 	return (1);
 }
 
-static void				print_bmp_info(t_bmp *bmp)
-{
-	dprintf(2, "--------------------\n");
-	dprintf(2, "bmp size: %d bytes\n", bmp->bmp_size);
-	dprintf(2, "data offset: %d bytes\n", bmp->data_offset);
-	dprintf(2, "width: %d pixels\n", bmp->width);
-	dprintf(2, "height: %d pixels\n", bmp->height);
-	dprintf(2, "bpp: %d bits\n", bmp->bpp);
-	dprintf(2, "raw size: %d bytes\n", bmp->raw_bmp_size);
-}
-
 static int				write_data(t_bmp *bmp, unsigned char *data, int fd)
 {
 	unsigned char		buf[3];
@@ -124,6 +113,5 @@ void					*load_bmp(char const *filename, t_bmp *bmp_ret)
 	close(fd);
 	if (bmp_ret != NULL)
 		*bmp_ret = bmp;
-	print_bmp_info(&bmp);
 	return (data);
 }
